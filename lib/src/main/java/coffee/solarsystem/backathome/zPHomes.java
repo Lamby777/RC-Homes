@@ -46,12 +46,12 @@ public class zPHomes extends JavaPlugin {
   private void newConnection() {
     try {
       conn = DriverManager.getConnection(
-          "jdbc:mysql://" + Address + "/" + Database, DatabaseUser, Password);
+              "jdbc:mysql://" + Address + "/" + Database, DatabaseUser, Password);
       prepared = new PreparedStatements(conn, getLogger());
 
       stmt = conn.createStatement();
       stmt.execute(
-          "CREATE TABLE IF NOT EXISTS homes (ID int PRIMARY KEY NOT NULL AUTO_INCREMENT, UUID varchar(255), Name varchar(255), world varchar(255), x double, y double, z double)");
+              "CREATE TABLE IF NOT EXISTS homes (ID int PRIMARY KEY NOT NULL AUTO_INCREMENT, UUID varchar(255), Name varchar(255), world varchar(255), x double, y double, z double)");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -76,7 +76,7 @@ public class zPHomes extends JavaPlugin {
     final boolean secondEq = (first[1] == second[1]);
 
     return (first[0] > second[0]) || (firstEq && (first[1] > second[1])) ||
-        (firstEq && secondEq && (first[2] > second[2]));
+            (firstEq && secondEq && (first[2] > second[2]));
   }
 
   void updateBackwardsCompat() throws SQLException {
@@ -84,7 +84,7 @@ public class zPHomes extends JavaPlugin {
     int[] version = parseSemVer(plVerStr);
 
     String lastVerStr = Objects.requireNonNullElse(
-        config.getString("LastLoadedVersion"), plVerStr);
+            config.getString("LastLoadedVersion"), plVerStr);
     int[] lastVersion = parseSemVer(lastVerStr);
 
     if (Arrays.equals(version, lastVersion)) {
@@ -92,16 +92,16 @@ public class zPHomes extends JavaPlugin {
     }
 
     // version below 0.4.0
-    if (semVerCmp(new int[] {0, 4, 0}, lastVersion)) {
+    if (semVerCmp(new int[]{0, 4, 0}, lastVersion)) {
       getLogger().info("Adding yaw, pitch, and server columns");
       stmt.execute(
-          "ALTER TABLE homes ADD COLUMN IF NOT EXISTS yaw FLOAT DEFAULT -1.0;");
+              "ALTER TABLE homes ADD COLUMN IF NOT EXISTS yaw FLOAT DEFAULT -1.0;");
 
       stmt.execute(
-          "ALTER TABLE homes ADD COLUMN IF NOT EXISTS pitch FLOAT DEFAULT - 1.0");
+              "ALTER TABLE homes ADD COLUMN IF NOT EXISTS pitch FLOAT DEFAULT - 1.0");
 
       stmt.execute(
-          "ALTER TABLE homes ADD COLUMN IF NOT EXISTS server VARCHAR(255) DEFAULT 'DEFAULT' ");
+              "ALTER TABLE homes ADD COLUMN IF NOT EXISTS server VARCHAR(255) DEFAULT 'DEFAULT' ");
       getLogger().info("Done!");
     }
 
@@ -112,7 +112,8 @@ public class zPHomes extends JavaPlugin {
     getLogger().info("New config saved after catch-up procedures.");
   }
 
-  @Override public void onEnable() { // Put that in config file
+  @Override
+  public void onEnable() { // Put that in config file
     ld = new LevenshteinDistance();
     Server server = getServer();
     ConsoleCommandSender cs = server.getConsoleSender();
@@ -130,9 +131,9 @@ public class zPHomes extends JavaPlugin {
       // saveDefaultConfig();
       saveConfig();
       cs.sendMessage(
-          "Configuration File created, setup your Mysql/Mariadb details there");
+              "Configuration File created, setup your Mysql/Mariadb details there");
       cs.sendMessage(
-          "Disabling zPHomes Plugin, setup your MySQL/MariaDB Database connection in ./plugins/zPHomes/config.yml");
+              "Disabling zPHomes Plugin, setup your MySQL/MariaDB Database connection in ./plugins/zPHomes/config.yml");
 
       this.getPluginLoader().disablePlugin(
               Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("coffee.solarsystem.backathome")));
@@ -151,12 +152,13 @@ public class zPHomes extends JavaPlugin {
       updateBackwardsCompat();
     } catch (SQLException e) {
       Logger.getLogger(zPHomes.class.getName())
-          .log(
-              Level.WARNING,
-              "Failed to run backwards-compatibility checks... Trying again next load.",
-              e);
+              .log(
+                      Level.WARNING,
+                      "Failed to run backwards-compatibility checks... Trying again next load.",
+                      e);
     }
   }
+
   @Override
   public void onDisable() {
     getLogger().info("Plugin Disabled");
@@ -166,71 +168,75 @@ public class zPHomes extends JavaPlugin {
   public boolean onCommand(CommandSender interpreter, Command cmd, String input,
                            String[] args) {
 
-    Player player = (Player)interpreter;
+    Player player = (Player) interpreter;
     newConnection();
 
     if (interpreter instanceof Player) {
       switch (input) {
-      case "newhome":
-        return cmdNewHome(player, args);
+        case "newhome":
+          return cmdNewHome(player, args);
 
-      case "sethome":
-        cmdSetHome(player, args);
-        return true;
+        case "sethome":
+          cmdSetHome(player, args);
+          return true;
 
-      case "homes":
-        return cmdListHomes(player, args);
+        case "homes":
+          return cmdListHomes(player, args);
 
-      case "homeshelp":
-        player.sendMessage("zPHomes by zP0");
-        player.sendMessage("Use '/home <name>' to teleport to a home");
-        player.sendMessage("Use '/homes <page>' to see all your homes");
-        player.sendMessage(
-            "Use '/homes search <name>' to search for homes containing exact names");
-        player.sendMessage(
-            "Use '/homes searchl <name>' to search for homes with similar names");
-        player.sendMessage("Use '/newhome <name>' to only create a new home");
-        player.sendMessage("Use '/sethome <name>' to create or update a home");
-        player.sendMessage("Use '/delhome <name>' to delete a home");
-        return false;
+        case "homeshelp":
+          player.sendMessage("zPHomes by zP0");
+          player.sendMessage("Use '/home <name>' to teleport to a home");
+          player.sendMessage("Use '/homes <page>' to see all your homes");
+          player.sendMessage(
+                  "Use '/homes search <name>' to search for homes containing exact names");
+          player.sendMessage(
+                  "Use '/homes searchl <name>' to search for homes with similar names");
+          player.sendMessage("Use '/newhome <name>' to only create a new home");
+          player.sendMessage("Use '/sethome <name>' to create or update a home");
+          player.sendMessage("Use '/delhome <name>' to delete a home");
+          return false;
 
-      case "home":
-        // returns bool from inside fn
-        return gotoHome(player, args);
+        case "home":
+          // returns bool from inside fn
+          return gotoHome(player, args);
 
-      case "delhome":
-        return deleteHome(player, args);
+        case "delhome":
+          return deleteHome(player, args);
 
-      case "homemanager":
-        if  (args.length > 0) {
-          if (args[0].equalsIgnoreCase("area")) {
-            if (args.length > 1) {
-              int pos = Integer.parseInt(args[1]);
+        case "homemanager":
+          if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("area")) {
+              if (args.length > 1) {
+                int pos = Integer.parseInt(args[1]);
+                player.sendMessage("looking for homes: ");
+                cmdSearchHomes(player, pos);
+              }
+
+            } else if (args[0].equalsIgnoreCase("delhome")) {
+              cmdDelHomeOther(player, args);
+
+            } else if (args[0].equalsIgnoreCase("help")) {
+              player.sendMessage("/homemanager area 9 -> shows homes in a radius of 9");
+              player.sendMessage("/homemanager delhome homename username -> deletes home");
+              player.sendMessage("/homemanager tp username homename -> teleports to user home");
+
+            } else if (args[0].equalsIgnoreCase("player")) {
               player.sendMessage("looking for homes: ");
-              cmdSearchHomes(player, pos);
+              cmdSearchHomesPlayer(player, args);
+
+            } else if (args[0].equalsIgnoreCase("tp")) {
+              cmdJumpHomeOther(player, args);
             }
-
-          } else if (args[0].equalsIgnoreCase("delhome")){
-            cmdDelHomeOther(player, args);
-
-          } else if (args[0].equalsIgnoreCase("help")) {
-            player.sendMessage("/homemanager area 9 -> shows homes in a radius of 9");
-            player.sendMessage("/homemanager delhome homename username -> deletes home");
-            player.sendMessage("/homemanager tp username homename -> teleports to user home");
-
-          } else if (args[0].equalsIgnoreCase("tp")) {
-            cmdJumpHomeOther(player, args);
           }
-        }
-        //search of all homes in area -> maybe = can be specified by player
-        //homemanager search [area] [player] ->
-        //list homes in area [and of specific players]
-        return true;
+          //search of all homes in area -> maybe = can be specified by player
+          //homemanager search [area] [player] ->
+          //list homes in area [and of specific players]
+          return true;
 
-      case "homemanagerdelarea":
-        //todo delete homes in selected area
-        //homemanager delete [area] [player]
-        return true;
+        case "homemanagerdelarea":
+          //todo delete homes in selected area
+          //homemanager delete [area] [player]
+          return true;
       }
       //maybe it would be a good Idea to soft-depend
       //on worldguard to extract homes with no home flag
@@ -238,44 +244,45 @@ public class zPHomes extends JavaPlugin {
 
     return true;
   }
+
   boolean cmdJumpHomeOther(Player player, String[] args) {
 
-    if(args.length<1) {
+    if (args.length < 1) {
       return true;
     } else {
       UUID uuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
       String home = args[2];
 
-    try {
-      ResultSet rs = prepared.homesWithName(uuid.toString(), home);
-      if (!rs.next()) {
-        player.sendMessage("Home not found");
-        return false;
+      try {
+        ResultSet rs = prepared.homesWithName(uuid.toString(), home);
+        if (!rs.next()) {
+          player.sendMessage("Home not found");
+          return false;
+        }
+
+        player.sendMessage("| Going to: " + home + " | ");
+
+        Location loc = player.getLocation();
+        loc.setWorld(Bukkit.getWorld(rs.getString("world")));
+        loc.setX(rs.getDouble("x"));
+        loc.setY(rs.getDouble("y"));
+        loc.setZ(rs.getDouble("z"));
+        float yaw = rs.getFloat("yaw");
+        float pitch = rs.getFloat("pitch");
+
+        if (yaw != -1.0) {
+          loc.setYaw(yaw);
+        }
+        if (pitch != -1.0) {
+          loc.setPitch(pitch);
+        }
+
+        player.teleport(loc);
+        player.sendMessage("Teleported to: " + home);
+      } catch (SQLException e) {
+        skillIssue(e);
       }
-
-      player.sendMessage("| Going to: " + home + " | ");
-
-      Location loc = player.getLocation();
-      loc.setWorld(Bukkit.getWorld(rs.getString("world")));
-      loc.setX(rs.getDouble("x"));
-      loc.setY(rs.getDouble("y"));
-      loc.setZ(rs.getDouble("z"));
-      float yaw = rs.getFloat("yaw");
-      float pitch = rs.getFloat("pitch");
-
-      if (yaw != -1.0) {
-        loc.setYaw(yaw);
-      }
-      if (pitch != -1.0) {
-        loc.setPitch(pitch);
-      }
-
-      player.teleport(loc);
-      player.sendMessage("Teleported to: " + home);
-    } catch (SQLException e) {
-      skillIssue(e);
-    }
-    return true;
+      return true;
     }
   }
 
@@ -287,33 +294,66 @@ public class zPHomes extends JavaPlugin {
     coordz[2] = (int) (ploc.getZ() - (pos));
     coordz[3] = (int) (ploc.getZ() + (pos));
 
-      try {
-          ResultSet homes = prepared.getAreaHomes(player.getWorld().getName(), coordz);
-          for(int a = 0; homes.next(); a++){
-            String UIhome = homes.getString("Name");
-            String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
+    try {
+      ResultSet homes = prepared.getAreaHomes(player.getWorld().getName(), coordz);
+      for(int a = 0; homes.next(); a++){
+        String UIhome = homes.getString("Name");
+        String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
 
-            TextComponent delHome = new TextComponent("[DEL]");
-            String delHomecmd = "/homemanager delhome " + UIhome + " " + UIhomeowner;
-            ClickEvent clickDelHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, delHomecmd);
-            delHome.setClickEvent(clickDelHome);
-            delHome.setColor(net.md_5.bungee.api.ChatColor.RED);
+        TextComponent delHome = new TextComponent("[DEL]");
+        String delHomecmd = "/homemanager delhome " + UIhome + " " + UIhomeowner;
+        ClickEvent clickDelHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, delHomecmd);
+        delHome.setClickEvent(clickDelHome);
+        delHome.setColor(net.md_5.bungee.api.ChatColor.RED);
 
-            TextComponent homeDelUI = new TextComponent(UIhome + " | " + UIhomeowner + " ");
+        TextComponent homeDelUI = new TextComponent(UIhome + " | " + UIhomeowner + " ");
 
-            TextComponent tpHome = new TextComponent("[teleport]");
-            String tpHomecmd = "/homemanager tp " + UIhomeowner + " " + UIhome;
-            ClickEvent clicktpHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpHomecmd);
-            tpHome.setClickEvent(clicktpHome);
-            tpHome.setColor(ChatColor.LIGHT_PURPLE.asBungee());
-            player.spigot().sendMessage(delHome, tpHome,  homeDelUI);
-        }
-
-      } catch (SQLException e) {
-          player.sendMessage("no homes found");
-          Bukkit.getConsoleSender().sendMessage("error " + e.toString());
+        TextComponent tpHome = new TextComponent("[teleport]");
+        String tpHomecmd = "/homemanager tp " + UIhomeowner + " " + UIhome;
+        ClickEvent clicktpHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpHomecmd);
+        tpHome.setClickEvent(clicktpHome);
+        tpHome.setColor(ChatColor.LIGHT_PURPLE.asBungee());
+        player.spigot().sendMessage(delHome, tpHome,  homeDelUI);
       }
-      //add sql stuff
+
+    } catch (SQLException e) {
+      player.sendMessage("no homes found");
+      Bukkit.getConsoleSender().sendMessage("error " + e.toString());
+    }
+    return true;
+  }
+
+    boolean cmdSearchHomesPlayer(Player player, String[] args) {
+    if (2 > args.length && args.length > 1) {
+      Player p = Bukkit.getOfflinePlayer(args[1]).getPlayer();
+      try {
+        ResultSet homes = prepared.getPlayerHomes(p.getUniqueId().toString());
+
+        for(int a = 0; homes.next(); a++){
+          String UIhome = homes.getString("Name");
+          String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
+
+          TextComponent delHome = new TextComponent("[DEL]");
+          String delHomecmd = "/homemanager delhome " + UIhome + " " + UIhomeowner;
+          ClickEvent clickDelHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, delHomecmd);
+          delHome.setClickEvent(clickDelHome);
+          delHome.setColor(net.md_5.bungee.api.ChatColor.RED);
+
+          TextComponent homeDelUI = new TextComponent(UIhome + " | " + UIhomeowner + " ");
+
+          TextComponent tpHome = new TextComponent("[teleport]");
+          String tpHomecmd = "/homemanager tp " + UIhomeowner + " " + UIhome;
+          ClickEvent clicktpHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpHomecmd);
+          tpHome.setClickEvent(clicktpHome);
+          tpHome.setColor(ChatColor.LIGHT_PURPLE.asBungee());
+          player.spigot().sendMessage(delHome, tpHome,  homeDelUI);
+        }
+      } catch (SQLException a){
+        player.sendMessage("no homes found");
+        Bukkit.getConsoleSender().sendMessage("error " + a.toString());
+      }
+    }
+
     return true;
   }
   void cmdDelHomeOther(Player player, String[] args) {

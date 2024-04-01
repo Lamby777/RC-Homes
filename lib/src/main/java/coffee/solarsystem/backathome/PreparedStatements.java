@@ -11,6 +11,8 @@ public class PreparedStatements {
   private PreparedStatement _deleteHome;
   private PreparedStatement _setHome;
   private PreparedStatement _getAreaHomes;
+
+  private PreparedStatement _getPlayerHomes;
   private Logger logger;
 
   public PreparedStatements(Connection conn, Logger logger) {
@@ -34,6 +36,9 @@ public class PreparedStatements {
 
       _getAreaHomes = conn.prepareStatement(
               "SELECT * FROM homes WHERE world = ? AND x > ? AND x < ? AND z > ? AND z < ?");
+
+      _getPlayerHomes = conn.prepareStatement(
+              "SELECT * FROM homes WHERE UUID = ?");
 
     } catch (SQLException e) {
       logger.log(Level.SEVERE, "Failed to init prepared", e);
@@ -67,6 +72,10 @@ public class PreparedStatements {
     _homesWithName.setString(1, uuid);
     _homesWithName.setString(2, home);
     return _homesWithName.executeQuery();
+  }
+  ResultSet getPlayerHomes(String uuid) throws SQLException {
+    _getPlayerHomes.setString(1, uuid);
+    return _getPlayerHomes.executeQuery();
   }
 
   ResultSet getAllHomes(String uuid) throws SQLException {
