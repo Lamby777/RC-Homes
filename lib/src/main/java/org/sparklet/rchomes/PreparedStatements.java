@@ -10,7 +10,9 @@ public class PreparedStatements {
     private PreparedStatement _homesSegment;
     private PreparedStatement _deleteHome;
     private PreparedStatement _setHome;
+    private PreparedStatement _getHomesAmount;
     private PreparedStatement _getAreaHomes;
+    private PreparedStatement _migrationDeleteServerCol;
 
     private PreparedStatement _getPlayerHomes;
     private Logger logger;
@@ -19,7 +21,9 @@ public class PreparedStatements {
         this.logger = logger;
 
         try {
+            // TODO wtf?
             _getAllHomes = conn.prepareStatement("SELECT * FROM homes WHERE UUID = ?");
+            _getPlayerHomes = conn.prepareStatement("SELECT * FROM homes WHERE UUID = ?");
 
             _homesWithName = conn.prepareStatement(
                     "SELECT * FROM homes WHERE UUID = ? AND NAME = ?");
@@ -33,14 +37,23 @@ public class PreparedStatements {
             _setHome = conn.prepareStatement(
                     "INSERT INTO homes (UUID,Name,world,x,y,z,yaw,pitch,server) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
+            _getHomesAmount = conn.prepareStatement("SELECT COUNT(*) from homes where UUID = ?");
+
+            _migrationDeleteServerCol = conn.prepareStatement("ALTER TABLE homes DROP COLUMN IF EXISTS server");
+
             _getAreaHomes = conn.prepareStatement(
                     "SELECT * FROM homes WHERE world = ? AND x > ? AND x < ? AND z > ? AND z < ?");
 
-            _getPlayerHomes = conn.prepareStatement(
-                    "SELECT * FROM homes WHERE UUID = ?");
-
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to init prepared", e);
+        }
+    }
+
+    void migrationDeleteServerCol() {
+        try {
+            _migrationDeleteServerCol.executeQuery();
+        } catch (SQLException e) {
+            RCHomes.skillIssue(e);
         }
     }
 
@@ -89,6 +102,11 @@ public class PreparedStatements {
         _getAreaHomes.setInt(4, coordz[2]);
         _getAreaHomes.setInt(5, coordz[3]);
         return _getAreaHomes.executeQuery();
+    }
+
+    ResultSet getHomesAmount(String uuid) throws SQLException {
+        _getHomesAmount.setString(1, uuid);
+        return _getHomesAmount.executeQuery();
     }
 
     ResultSet homesSegment(String uuid, int segment) throws SQLException {

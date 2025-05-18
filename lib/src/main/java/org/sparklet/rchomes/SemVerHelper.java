@@ -6,7 +6,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 public class SemVerHelper {
+    @SuppressWarnings("unused")
     private final int[] lastVersion;
+    @SuppressWarnings("unused")
     private final int[] currentVersion;
 
     public SemVerHelper(RCHomes rch) {
@@ -21,12 +23,11 @@ public class SemVerHelper {
      * Takes a reference to the plugin instance so it can save the config
      */
     public void overwriteLastVersion(RCHomes rch) {
-        PluginDescriptionFile pdf = rch.getDescription();
+        String curVer = rch.getDescription().getVersion();
 
-        rch.getLogger().info("RCH Migration complete.");
-        rch.getConfig().set("last-version", pdf.getVersion());
+        rch.getConfig().set("last-version", curVer);
         rch.saveConfig();
-        rch.getLogger().info("RCH config saved after migration.");
+        rch.getLogger().info("RCH config saved. Updated `last-version` to " + curVer);
     }
 
     private static int[] parseSemVer(String semVerStr) {

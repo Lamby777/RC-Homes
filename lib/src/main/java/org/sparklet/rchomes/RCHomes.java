@@ -49,9 +49,10 @@ public class RCHomes extends JavaPlugin {
                     "jdbc:mysql://" + dbLogin.address + "/" + dbLogin.database, dbLogin.username, dbLogin.password);
             prepared = new PreparedStatements(conn, getLogger());
 
+            // TODO prepared statement
             stmt = conn.createStatement();
             stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS homes (ID int PRIMARY KEY NOT NULL AUTO_INCREMENT, UUID varchar(255), Name varchar(255), world varchar(255), x double, y double, z double)");
+                    "CREATE TABLE IF NOT EXISTS homes (ID int PRIMARY KEY NOT NULL AUTO_INCREMENT, UUID varchar(255), Name varchar(255), world varchar(255), x double, y double, z double, yaw float DEFAULT - 1.0, pitch float DEFAULT - 1.0)");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -59,9 +60,10 @@ public class RCHomes extends JavaPlugin {
 
     void migrateOldData() throws SQLException {
         getLogger().info("Removing server column if exists");
-        stmt.execute("ALTER TABLE homes DROP COLUMN IF EXISTS server");
+        prepared.migrationDeleteServerCol();
         getLogger().info("Done!");
 
+        getLogger().info("RCH Migration complete. Will now overwrite config `last-version`.");
         semverHelper.overwriteLastVersion(this);
     }
 
@@ -123,6 +125,8 @@ public class RCHomes extends JavaPlugin {
                     player.sendMessage("Use '/newhome <name>' to only create a new home");
                     player.sendMessage("Use '/sethome <name>' to create or update a home");
                     player.sendMessage("Use '/delhome <name>' to delete a home");
+                    player.sendMessage("homesmanager /homemanager help");
+                    // TODO
                     return false;
 
                 case "home":
@@ -148,10 +152,7 @@ public class RCHomes extends JavaPlugin {
                             player.sendMessage("/homemanager area 9 -> shows homes in a radius of 9");
                             player.sendMessage("/homemanager delhome homename username -> deletes home");
                             player.sendMessage("/homemanager tp username homename -> teleports to user home");
-
-                        } else if (args[0].equalsIgnoreCase("player")) {
-                            player.sendMessage("looking for homes: ");
-                            cmdSearchHomesPlayer(player, args);
+                            player.sendMessage("/homemanager playerhomes playername");
 
                         } else if (args[0].equalsIgnoreCase("tp")) {
                             cmdJumpHomeOther(player, args);
@@ -249,40 +250,6 @@ public class RCHomes extends JavaPlugin {
             player.sendMessage("no homes found");
             Bukkit.getConsoleSender().sendMessage("error " + e.toString());
         }
-        return true;
-    }
-
-    boolean cmdSearchHomesPlayer(Player player, String[] args) {
-        if (2 > args.length && args.length > 1) {
-            Player p = Bukkit.getOfflinePlayer(args[1]).getPlayer();
-            try {
-                ResultSet homes = prepared.getPlayerHomes(p.getUniqueId().toString());
-
-                for (int a = 0; homes.next(); a++) {
-                    String UIhome = homes.getString("Name");
-                    String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
-
-                    TextComponent delHome = new TextComponent("[DEL]");
-                    String delHomecmd = "/homemanager delhome " + UIhome + " " + UIhomeowner;
-                    ClickEvent clickDelHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, delHomecmd);
-                    delHome.setClickEvent(clickDelHome);
-                    delHome.setColor(net.md_5.bungee.api.ChatColor.RED);
-
-                    TextComponent homeDelUI = new TextComponent(UIhome + " | " + UIhomeowner + " ");
-
-                    TextComponent tpHome = new TextComponent("[teleport]");
-                    String tpHomecmd = "/homemanager tp " + UIhomeowner + " " + UIhome;
-                    ClickEvent clicktpHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpHomecmd);
-                    tpHome.setClickEvent(clicktpHome);
-                    tpHome.setColor(ChatColor.LIGHT_PURPLE.asBungee());
-                    player.spigot().sendMessage(delHome, tpHome, homeDelUI);
-                }
-            } catch (SQLException a) {
-                player.sendMessage("no homes found");
-                Bukkit.getConsoleSender().sendMessage("error " + a.toString());
-            }
-        }
-
         return true;
     }
 
@@ -436,8 +403,11 @@ public class RCHomes extends JavaPlugin {
             }
 
             ResultSet rs = prepared.homesSegment(uuid, page);
+            ResultSet amount = prepared.getHomesAmount(uuid);
 
-            player.sendMessage(ChatColor.BOLD + "Homes (Page " + (page + 1) + ") : ");
+            amount.next();
+            String pagezamount = (Integer.toString((int) Math.ceil(((double) amount.getInt(1)) / PAGE_LENGTH)));
+            player.sendMessage(ChatColor.BOLD + "Homes (Page " + (page + 1) + "/" + pagezamount + ")");
 
             int start = page * PAGE_LENGTH;
             for (int i = start; rs.next() && i < start + PAGE_LENGTH; i++) {
