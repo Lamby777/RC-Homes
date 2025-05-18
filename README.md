@@ -1,6 +1,6 @@
 # RC-Homes
 
-Hard fork of zPHomes - An infinite homes plugin for Bukkit/Spigot/Paper
+Hard fork of zPHomes - An infinite homes plugin for Paper
 with MySQL/MariaDB support.
 
 - Tested on 1.21
