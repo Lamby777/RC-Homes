@@ -1,4 +1,4 @@
-package coffee.solarsystem.backathome;
+package org.sparklet.rchomes;
 
 import java.sql.*;
 import java.util.logging.Level;

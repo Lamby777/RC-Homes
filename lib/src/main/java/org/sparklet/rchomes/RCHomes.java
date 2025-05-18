@@ -39,15 +39,14 @@ public class RCHomes extends JavaPlugin {
     static Statement stmt;
     static Connection conn;
     static Statement query;
-    PreparedStatements prepared;
-    LevenshteinDistance ld = new LevenshteinDistance();
+    private PreparedStatements prepared;
+    private DatabaseLogin dbLogin;
     ResultSet Lookup;
-    String DatabaseUser, Password, Address, Database, Port = "";
 
     private void newConnection() {
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://" + Address + "/" + Database, DatabaseUser, Password);
+                    "jdbc:mysql://" + dbLogin.address + "/" + dbLogin.database, dbLogin.username, dbLogin.password);
             prepared = new PreparedStatements(conn, getLogger());
 
             stmt = conn.createStatement();
@@ -67,21 +66,14 @@ public class RCHomes extends JavaPlugin {
     }
 
     @Override
-    public void onEnable() { // Put that in config file
+    public void onEnable() {
         saveDefaultConfig();
-        FileConfiguration config = getConfig();
 
         Server server = getServer();
         ConsoleCommandSender cs = server.getConsoleSender();
         cs.sendMessage("Establishing Database connection");
 
-        // Build config ifnot exists
-        DatabaseUser = config.getString("DatabaseUser");
-        Password = config.getString("Password");
-        Address = config.getString("Address");
-        Database = config.getString("Database");
-        Port = config.getString("Port");
-
+        dbLogin = DatabaseLogin.fromConfig(this);
         newConnection();
 
         try {
