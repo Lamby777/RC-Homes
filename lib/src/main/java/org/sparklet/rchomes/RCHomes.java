@@ -6,7 +6,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.md_5.bungee.api.chat.ClickEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,7 +19,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author Cherry <refcherry@sparklet.org>
@@ -226,20 +227,17 @@ public class RCHomes extends JavaPlugin {
                 String UIhome = homes.getString("Name");
                 String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
 
-                TextComponent delHome = new TextComponent("[DEL]");
-                String delHomecmd = "/homemanager delhome " + UIhome + " " + UIhomeowner;
-                ClickEvent clickDelHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, delHomecmd);
-                delHome.setClickEvent(clickDelHome);
-                delHome.setColor(net.md_5.bungee.api.ChatColor.RED);
+                Component delHome = Component.text("[DEL]")
+                        .clickEvent(ClickEvent.runCommand("/homemanager delhome " + UIhome + " " + UIhomeowner))
+                        .color(NamedTextColor.RED);
 
-                TextComponent homeDelUI = new TextComponent(UIhome + " | " + UIhomeowner + " ");
+                Component homeDelUI = Component.text(UIhome + " | " + UIhomeowner + " ");
 
-                TextComponent tpHome = new TextComponent("[teleport]");
-                String tpHomecmd = "/homemanager tp " + UIhomeowner + " " + UIhome;
-                ClickEvent clicktpHome = new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpHomecmd);
-                tpHome.setClickEvent(clicktpHome);
-                tpHome.setColor(ChatColor.LIGHT_PURPLE.asBungee());
-                player.spigot().sendMessage(delHome, tpHome, homeDelUI);
+                Component tpHome = Component.text("[teleport]")
+                        .clickEvent(ClickEvent.runCommand("/homemanager tp " + UIhomeowner + " " + UIhome))
+                        .color(NamedTextColor.LIGHT_PURPLE);
+
+                player.sendMessage(delHome.append(tpHome).append(homeDelUI));
             }
 
         } catch (SQLException e) {
@@ -251,11 +249,11 @@ public class RCHomes extends JavaPlugin {
 
     void cmdDelHomeOther(Player player, String[] args) {
         String homeName = args[1];
-        String homeUUID = Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString();
+        String homeOwnerUUID = Bukkit.getPlayerUniqueId(args[2]).toString();
 
-        String homePlayer = Bukkit.getOfflinePlayer(UUID.fromString(homeUUID)).getName();
+        String homePlayer = Bukkit.getOfflinePlayer(UUID.fromString(homeOwnerUUID)).getName();
         player.sendMessage("trying to delete home " + homeName + " from " + homePlayer);
-        if (prepared.deleteHome(homeUUID, homeName)) {
+        if (prepared.deleteHome(homeOwnerUUID, homeName)) {
             player.sendMessage("home " + homeName + " deleted from player " + homePlayer);
         } else {
             player.sendMessage("error deleting home");
@@ -407,40 +405,23 @@ public class RCHomes extends JavaPlugin {
 
             int start = page * PAGE_LENGTH;
             for (int i = start; rs.next() && i < start + PAGE_LENGTH; i++) {
-
-                TextComponent home_object = new TextComponent(
-                        " | " + rs.getString("Name") + " | " + rs.getString("world"));
-                String home_object_cmd = "/home " + rs.getString("Name");
-                ClickEvent click_home_object = new ClickEvent(ClickEvent.Action.RUN_COMMAND, home_object_cmd);
-
-                home_object.setClickEvent(click_home_object);
-                home_object.setColor(ChatColor.DARK_AQUA.asBungee());
-                player.spigot().sendMessage(home_object);
-                // player.sendMessage(
-                // ChatColor.DARK_AQUA + String.valueOf(i + 1) +
-                // " | " + rs.getString("Name") + " | " + rs.getString("world") /* + ", " +
-                // rs.getString("x") + ", " + rs.getString("y") + ", " + rs.getString("z")*/);
+                Component home_object = Component.text(" | " + rs.getString("Name") + " | " + rs.getString("world"))
+                        .clickEvent(ClickEvent.runCommand("/home " + rs.getString("Name")))
+                        .color(NamedTextColor.DARK_AQUA);
+                player.sendMessage(home_object);
             }
-            // player.sendMessage(ChatColor.BOLD + "Page ( " + page + " || " + (page + 2) +
-            // " )");
 
-            TextComponent page_previous = new TextComponent("previous");
-            TextComponent page_next = new TextComponent("next");
+            Component page_previous = Component.text("previous")
+                    .clickEvent(ClickEvent.runCommand("/homes " + page))
+                    .color(NamedTextColor.YELLOW);
 
-            String page_previous_cmd = "/homes " + String.valueOf(page);
-            String page_next_cmd = "/homes " + String.valueOf(page + 2);
+            Component page_next = Component.text("next")
+                    .clickEvent(ClickEvent.runCommand("/homes " + (page + 2)))
+                    .color(NamedTextColor.GOLD);
 
-            ClickEvent click_page_previous = new ClickEvent(ClickEvent.Action.RUN_COMMAND, page_previous_cmd);
-            ClickEvent click_page_next = new ClickEvent(ClickEvent.Action.RUN_COMMAND, page_next_cmd);
+            Component spacer = Component.text(" || ");
 
-            page_previous.setClickEvent(click_page_previous);
-            page_next.setClickEvent(click_page_next);
-
-            page_previous.setColor(ChatColor.YELLOW.asBungee());
-            page_next.setColor(net.md_5.bungee.api.ChatColor.GOLD);
-
-            TextComponent spacer = new TextComponent(" || ");
-            player.spigot().sendMessage(page_previous, spacer, page_next);
+            player.sendMessage(page_previous.append(spacer).append(page_next));
 
         } catch (SQLException e) {
             skillIssue(e);
