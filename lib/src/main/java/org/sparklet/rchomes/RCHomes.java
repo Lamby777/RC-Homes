@@ -93,9 +93,9 @@ public class RCHomes extends JavaPlugin {
             return;
         }
 
-        // version below 0.4.0
+        // version below `0.4.0` need to add the `yaw` and `pitch` columns
         if (semVerCmp(new int[] { 0, 4, 0 }, lastVersion)) {
-            getLogger().info("Adding yaw, pitch, and server columns");
+            getLogger().info("Adding yaw and pitch columns");
             stmt.execute(
                     "ALTER TABLE homes ADD COLUMN IF NOT EXISTS yaw FLOAT DEFAULT -1.0;");
 
@@ -106,6 +106,8 @@ public class RCHomes extends JavaPlugin {
                     "ALTER TABLE homes ADD COLUMN IF NOT EXISTS server VARCHAR(255) DEFAULT 'DEFAULT' ");
             getLogger().info("Done!");
         }
+
+        // versions below 0.13.0 should have the `server` column removed
 
         getLogger().info("Ran all the catch-up procedures!");
 
@@ -409,8 +411,7 @@ public class RCHomes extends JavaPlugin {
         Location loc = player.getLocation();
         String uuid = player.getUniqueId().toString();
 
-        HomeLocation hloc = new HomeLocation(loc, player.getWorld().getName(),
-                player.getServer().getName());
+        HomeLocation hloc = new HomeLocation(loc, player.getWorld().getName());
         prepared.setHome(uuid, homename, hloc);
     }
 

@@ -4,11 +4,10 @@ import org.bukkit.Location;
 
 public class HomeLocation {
     Location loc;
-    public String worldname, servername;
+    String worldname;
 
-    public HomeLocation(Location loc, String worldname, String servername) {
+    public HomeLocation(Location loc, String worldname) {
         this.loc = loc;
         this.worldname = worldname;
-        this.servername = servername; // is this even necessary?
     }
 }

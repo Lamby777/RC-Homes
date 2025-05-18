@@ -58,7 +58,6 @@ public class PreparedStatements {
             _setHome.setDouble(6, hloc.loc.getZ());
             _setHome.setFloat(7, hloc.loc.getYaw());
             _setHome.setFloat(8, hloc.loc.getPitch());
-            _setHome.setString(9, hloc.servername);
 
             // phew, it's over
             _setHome.execute();
