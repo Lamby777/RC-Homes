@@ -24,7 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.md_5.bungee.api.chat.TextComponent;
 
 /**
- * @author Cherry <cherry@sparklet.org>
+ * @author Cherry <refcherry@sparklet.org>
  */
 public class RCHomes extends JavaPlugin {
     // homes listed per /homes page
@@ -33,13 +33,14 @@ public class RCHomes extends JavaPlugin {
     public static final double HOME_SEARCH_STRICTNESS = 0.30;
 
     private SemVerHelper semverHelper = new SemVerHelper(this);
+
     public String host, port, database, username, password;
     // static MysqlDataSource data = new MysqlDataSource();
     static Statement stmt;
     static Connection conn;
     static Statement query;
     PreparedStatements prepared;
-    LevenshteinDistance ld;
+    LevenshteinDistance ld = new LevenshteinDistance();
     ResultSet Lookup;
     String DatabaseUser, Password, Address, Database, Port = "";
 
@@ -67,38 +68,21 @@ public class RCHomes extends JavaPlugin {
 
     @Override
     public void onEnable() { // Put that in config file
-        ld = new LevenshteinDistance();
+        saveDefaultConfig();
+        FileConfiguration config = getConfig();
+
         Server server = getServer();
         ConsoleCommandSender cs = server.getConsoleSender();
         cs.sendMessage("Establishing Database connection");
 
-        File configdata = new File("plugins/RCHomes/config.yml");
-
         // Build config ifnot exists
-        if (!configdata.exists()) {
-            config.set("DatabaseUser", "user");
-            config.set("Password", "password");
-            config.set("Address", "ipaddress");
-            config.set("Database", "databasename");
-            config.set("Port", 3306);
-            // saveDefaultConfig();
-            saveConfig();
-            cs.sendMessage(
-                    "Configuration File created, setup your MySQL/MariaDB details there");
-            cs.sendMessage(
-                    "Disabling RC-Homes Plugin, setup your MySQL/MariaDB Database connection in ./plugins/RCHomes/config.yml");
+        DatabaseUser = config.getString("DatabaseUser");
+        Password = config.getString("Password");
+        Address = config.getString("Address");
+        Database = config.getString("Database");
+        Port = config.getString("Port");
 
-            this.getPluginLoader().disablePlugin(
-                    Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("org.sparklet.rchomes")));
-        } else {
-            DatabaseUser = config.getString("DatabaseUser");
-            Password = config.getString("Password");
-            Address = config.getString("Address");
-            Database = config.getString("Database");
-            Port = config.getString("Port");
-
-            newConnection();
-        }
+        newConnection();
 
         try {
             // stuff to run when updating from older version
@@ -419,7 +403,7 @@ public class RCHomes extends JavaPlugin {
             return true;
         }
 
-        double distance = ld.apply(query, name);
+        double distance = new LevenshteinDistance().apply(query, name);
         double ratio = distance / query.length();
 
         return ratio <= (1.0 - HOME_SEARCH_STRICTNESS);

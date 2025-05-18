@@ -40,6 +40,7 @@ public class SemVerHelper {
         return parsed;
     }
 
+    @SuppressWarnings("unused")
     private static Ord semVerCmp(int[] first, int[] second) {
         if (Arrays.equals(first, second)) {
             return Ord.EQUAL;
