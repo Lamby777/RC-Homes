@@ -95,12 +95,12 @@ public class PreparedStatements {
         return _getAllHomes.executeQuery();
     }
 
-    ResultSet getAreaHomes(String world, int[] coordz) throws SQLException {
+    ResultSet getAreaHomes(String world, int[] coords) throws SQLException {
         _getAreaHomes.setString(1, world);
-        _getAreaHomes.setInt(2, coordz[0]);
-        _getAreaHomes.setInt(3, coordz[1]);
-        _getAreaHomes.setInt(4, coordz[2]);
-        _getAreaHomes.setInt(5, coordz[3]);
+        _getAreaHomes.setInt(2, coords[0]);
+        _getAreaHomes.setInt(3, coords[1]);
+        _getAreaHomes.setInt(4, coords[2]);
+        _getAreaHomes.setInt(5, coords[3]);
         return _getAreaHomes.executeQuery();
     }
 

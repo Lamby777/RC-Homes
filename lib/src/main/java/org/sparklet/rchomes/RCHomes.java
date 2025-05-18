@@ -1,9 +1,7 @@
 package org.sparklet.rchomes;
 
-import java.io.File;
 import java.sql.*;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,9 +15,7 @@ import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -180,7 +176,7 @@ public class RCHomes extends JavaPlugin {
         if (args.length < 1) {
             return true;
         } else {
-            UUID uuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
+            UUID uuid = Bukkit.getPlayerUniqueId(args[1]);
             String home = args[2];
 
             try {
@@ -218,15 +214,15 @@ public class RCHomes extends JavaPlugin {
 
     boolean cmdSearchHomes(Player player, int pos) {
         Location ploc = player.getLocation();
-        int[] coordz = new int[4];
-        coordz[0] = (int) (ploc.getX() - (pos));
-        coordz[1] = (int) (ploc.getX() + (pos));
-        coordz[2] = (int) (ploc.getZ() - (pos));
-        coordz[3] = (int) (ploc.getZ() + (pos));
+        int[] coords = new int[4];
+        coords[0] = (int) (ploc.getX() - (pos));
+        coords[1] = (int) (ploc.getX() + (pos));
+        coords[2] = (int) (ploc.getZ() - (pos));
+        coords[3] = (int) (ploc.getZ() + (pos));
 
         try {
-            ResultSet homes = prepared.getAreaHomes(player.getWorld().getName(), coordz);
-            for (int a = 0; homes.next(); a++) {
+            ResultSet homes = prepared.getAreaHomes(player.getWorld().getName(), coords);
+            for (int i = 0; homes.next(); i++) {
                 String UIhome = homes.getString("Name");
                 String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
 
