@@ -1,45 +1,59 @@
-# zP-Homes
-A home plugin using a database to give players the option to set far over 1000 homes
-Back at Home is a minecraft server plugin for spigot/papermc/bukkit
-- current version supports 1.8.9-1.20.4
-- tested on 1.20.4
+# RC-Homes
 
+A homes plugin that uses a database to give players the option to set unlimited homes.
 
-Players can set infinite amounts of homes 
-- homes are safely stored inside a mysql or mariadb
-- featuring fast performance even when huge amounts of homes are set
+- Tested on 1.21
+- Uses MySQL or MariaDB
+- Fast performance, even when huge amounts of homes are set
+- Admins can see/edit nearby homes of players
+- Convenient commands to flip between 2 temporary home slots (wip)
 
+# Commands
 
-<h1>Supported commands</h1>
+## Homes Commands (Permission: `rchomes.user`)
 
-- /sethome
-- /sethome homename
-- /newhome homename -> (same as sethome but won't allow the override of homes)
+- `/home [name]` - Teleports to the specified home. Defaults to `home`.
+- `/homes` - Lists all your homes
+- `/sethome [name]` - Sets a home at your current location. Defaults to `home`.
+- `/newhome [name]` - Like `/sethome`, but won't override existing homes.
+- `/delhome [name]` - Deletes the specified home.
 
+WIP: `/delhome` will allow using wildcards to mass-delete homes starting
+with a prefix. (will ask for confirmation)
 
+## Homes Manager Commands (Permission: `rchomes.admin`)
 
-- /home homename
-- /homes -> (Prints a list of all homes of the player)
+- `/homemanager area <n>` - Shows everyone's homes detected within `n` blocks.
+- `/homemanager delhome <name> <username>` - Deletes a player's home.
 
+## Swap Commands (Permission: `rchomes.swap`)
 
-<h3>Completed development</h3>
+WIP FEATURE!!!
 
-- home moderation
+If you play on a server that has this plugin, you'll quickly find
+yourself setting a "temporary" home every single time you want to
+return to some insignificant location. As a quality of life feature,
+RC-Homes has a "swap" feature that does all this for you.
 
+"Swap home" really just refers to a special home named `__swap`.
+That's how it works under the hood. You can set or warp to this home
+manually if you want more control or are scripting something.
 
-- /homemanager area 90 -> shows all homes of players in 90 blocks
-- /homemanager delhome homename username -> deletes home of player
+It won't let you use `/swap` if you don't have this home set yet.
+Run `/brb` at least once first.
 
+- `/brb` - Set your swap home. Short for `/sethome __swap`
+- `/ret` - Return to your swap home. Short for `/home __swap`
+- `/swap` - Swaps your current location with the home `__swap`.
 
-- home permissions
+Basically, use `/ret` if you don't care about your current location and
+just want to return to the swap home without overwriting it. Use `/swap`
+if you care about both your current location and the swap home.
 
-- permission node for users zPHomez.user
-- permission node for homemanager zPHomez.manager (dont give to players)
+If this all sounds confusing, don't worry about it. Having unlimited
+homes makes you think differently about teleportation, and you'll
+eventually see the value using in this feature.
 
-<h3>Under development</h3>
+# Installation
 
-- worldguard support
-- Permission based home limit
-- Bulkupdater for renamed worlds
-- export feature into json
-- clickable /homes menu
+Run `./gradlew build` to build the plugin. The jar file will be in `./build/libs/`.
