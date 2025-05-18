@@ -29,10 +29,10 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class RCHomes extends JavaPlugin {
     // homes listed per /homes page
     public static final int PAGE_LENGTH = 16;
-
     // At least this percent of the name should match
     public static final double HOME_SEARCH_STRICTNESS = 0.30;
 
+    private SemVerHelper semverHelper = new SemVerHelper(this);
     public String host, port, database, username, password;
     // static MysqlDataSource data = new MysqlDataSource();
     static Statement stmt;
@@ -40,9 +40,7 @@ public class RCHomes extends JavaPlugin {
     static Statement query;
     PreparedStatements prepared;
     LevenshteinDistance ld;
-    PluginDescriptionFile pdf = this.getDescription();
     ResultSet Lookup;
-    FileConfiguration config = this.getConfig();
     String DatabaseUser, Password, Address, Database, Port = "";
 
     private void newConnection() {
@@ -59,61 +57,12 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    private int[] parseSemVer(String semVerStr) {
-        String[] sep = semVerStr.split("\\.");
-        int[] parsed = new int[sep.length];
+    void migrateOldData() throws SQLException {
+        getLogger().info("Removing server column if exists");
+        stmt.execute("ALTER TABLE homes DROP COLUMN IF EXISTS server");
+        getLogger().info("Done!");
 
-        for (int i = 0; i < sep.length; i++) {
-            parsed[i] = Integer.parseInt(sep[i]);
-        }
-
-        return parsed;
-    }
-
-    /**
-     * true if first argument is a newer semver version than second argument
-     */
-    boolean semVerCmp(int[] first, int[] second) {
-        final boolean firstEq = (first[0] == second[0]);
-        final boolean secondEq = (first[1] == second[1]);
-
-        return (first[0] > second[0]) || (firstEq && (first[1] > second[1])) ||
-                (firstEq && secondEq && (first[2] > second[2]));
-    }
-
-    void updateBackwardsCompat() throws SQLException {
-        String plVerStr = pdf.getVersion();
-        int[] version = parseSemVer(plVerStr);
-
-        String lastVerStr = Objects.requireNonNullElse(
-                config.getString("LastLoadedVersion"), plVerStr);
-        int[] lastVersion = parseSemVer(lastVerStr);
-
-        if (Arrays.equals(version, lastVersion)) {
-            return;
-        }
-
-        // version below `0.4.0` need to add the `yaw` and `pitch` columns
-        if (semVerCmp(new int[] { 0, 4, 0 }, lastVersion)) {
-            getLogger().info("Adding yaw and pitch columns");
-            stmt.execute(
-                    "ALTER TABLE homes ADD COLUMN IF NOT EXISTS yaw FLOAT DEFAULT -1.0;");
-
-            stmt.execute(
-                    "ALTER TABLE homes ADD COLUMN IF NOT EXISTS pitch FLOAT DEFAULT - 1.0");
-
-            stmt.execute(
-                    "ALTER TABLE homes ADD COLUMN IF NOT EXISTS server VARCHAR(255) DEFAULT 'DEFAULT' ");
-            getLogger().info("Done!");
-        }
-
-        // versions below 0.13.0 should have the `server` column removed
-
-        getLogger().info("Ran all the catch-up procedures!");
-
-        config.set("LastLoadedVersion", plVerStr);
-        saveConfig();
-        getLogger().info("New config saved after catch-up procedures.");
+        semverHelper.overwriteLastVersion(this);
     }
 
     @Override
@@ -151,9 +100,9 @@ public class RCHomes extends JavaPlugin {
             newConnection();
         }
 
-        // stuff to run when updating from older version
         try {
-            updateBackwardsCompat();
+            // stuff to run when updating from older version
+            migrateOldData();
         } catch (SQLException e) {
             Logger.getLogger(RCHomes.class.getName())
                     .log(
@@ -462,9 +411,8 @@ public class RCHomes extends JavaPlugin {
     /**
      * Returns true if `name` is "close enough" to `query`
      *
-     * "Close enough" depends on what we decide over time,
-     * so yeah, this is in is own method so we can easily
-     * change the formula
+     * This is the formula to tweak if my definition of
+     * "close enough" isn't as good as yours.
      */
     private boolean levenshteinScore(String query, String name) {
         if (query.isEmpty()) {

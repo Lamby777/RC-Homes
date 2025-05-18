@@ -3,13 +3,15 @@
 Hard fork of zPHomes - An infinite homes plugin for Bukkit/Spigot/Paper
 with MySQL/MariaDB support.
 
-- Drop-in replacement for zPHomes 0.13.0, just copy over your config file
 - Tested on 1.21
 - Uses MySQL or MariaDB
 - Fast performance, even when huge amounts of homes are set
 - Admins can see/edit nearby homes of players
 - Convenient commands to flip between 2 temporary home slots (wip)
 - Supports wildcards for deleting homes (wip)
+- Drop-in replacement for zPHomes 0.13.0, just copy over your config file
+  - Removed some compatibility checks, so update to 0.13.0 before switching
+  - Switching back to zPHomes probably won't work, don't count on it
 
 # Commands
 
