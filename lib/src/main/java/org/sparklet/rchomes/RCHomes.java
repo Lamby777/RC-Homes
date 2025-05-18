@@ -112,6 +112,7 @@ public class RCHomes extends JavaPlugin {
                     return cmdListHomes(player, args);
 
                 case "homeshelp":
+                    // TODO
                     player.sendMessage("RCHomes by refcherry");
                     player.sendMessage("Use '/home <name>' to teleport to a home");
                     player.sendMessage("Use '/homes <page>' to see all your homes");
@@ -123,8 +124,7 @@ public class RCHomes extends JavaPlugin {
                     player.sendMessage("Use '/sethome <name>' to create or update a home");
                     player.sendMessage("Use '/delhome <name>' to delete a home");
                     player.sendMessage("homesmanager /homemanager help");
-                    // TODO
-                    return false;
+                    return true;
 
                 case "home":
                     // returns bool from inside fn
@@ -155,21 +155,11 @@ public class RCHomes extends JavaPlugin {
                             cmdJumpHomeOther(player, args);
                         }
                     }
-                    // search of all homes in area -> maybe = can be specified by player
-                    // homemanager search [area] [player] ->
-                    // list homes in area [and of specific players]
-                    return true;
-
-                case "homemanagerdelarea":
-                    // todo delete homes in selected area
-                    // homemanager delete [area] [player]
                     return true;
             }
-            // maybe it would be a good Idea to soft-depend
-            // on worldguard to extract homes with no home flag
         }
 
-        return true;
+        return false;
     }
 
     boolean cmdJumpHomeOther(Player player, String[] args) {
@@ -213,17 +203,20 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    boolean cmdSearchHomes(Player player, int pos) {
+    // TODO what the actual hell is this method
+    void cmdSearchHomes(Player player, int pos) {
+        String inWorld = player.getWorld().getName();
         Location ploc = player.getLocation();
-        int[] coords = new int[4];
-        coords[0] = (int) (ploc.getX() - (pos));
-        coords[1] = (int) (ploc.getX() + (pos));
-        coords[2] = (int) (ploc.getZ() - (pos));
-        coords[3] = (int) (ploc.getZ() + (pos));
+        int[] coords = {
+                (int) (ploc.getX() - pos),
+                (int) (ploc.getX() + pos),
+                (int) (ploc.getZ() - pos),
+                (int) (ploc.getZ() + pos),
+        };
 
         try {
-            ResultSet homes = prepared.getAreaHomes(player.getWorld().getName(), coords);
-            for (int i = 0; homes.next(); i++) {
+            ResultSet homes = prepared.getAreaHomes(inWorld, coords);
+            while (homes.next()) {
                 String UIhome = homes.getString("Name");
                 String UIhomeowner = Bukkit.getOfflinePlayer(UUID.fromString(homes.getString("UUID"))).getName();
 
@@ -239,12 +232,10 @@ public class RCHomes extends JavaPlugin {
 
                 player.sendMessage(delHome.append(tpHome).append(homeDelUI));
             }
-
         } catch (SQLException e) {
             player.sendMessage("no homes found");
             Bukkit.getConsoleSender().sendMessage("error " + e.toString());
         }
-        return true;
     }
 
     void cmdDelHomeOther(Player player, String[] args) {
