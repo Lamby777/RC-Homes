@@ -1,32 +1,38 @@
 ## YAML Template.
 ---
 
-author: zP0
-name: zPHomes
-version: 0.12.0
+author: refcherry
+name: RCHomes
+version: 0.1.0
 load: POSTWORLD
-main: coffee.solarsystem.backathome.zPHomes
+main: org.sparklet.rchomes.RCHomes
 database: true
 
 commands:
   newhome:
-    description: /newhome homename | Create a new home, but don't overwrite if one already exists.
-    permission: zPHomez.user
+    description: Create a new home, but don't overwrite if it already exists.
+    usage: /newhome <name>
+    permission: RCHomes.user
   sethome:
-    description: /sethome homename | Set a new home
-    permission: zPHomez.user
+    description: Set a new home, and overwrite if it already exists.
+    usage: /sethome <name>
+    permission: RCHomes.user
   homes:
-    description: /homes pagenumber | List your homes
-    permission: zPHomez.user
+    description: List your homes
+    usage: /homes <page>
+    permission: RCHomes.user
   home:
-    description: /home homename | Teleports you to your home
-    permission: zPHomez.user
+    description: Teleports you to your home
+    usage: /home <name>
+    permission: RCHomes.user
   delhome:
-    description: /delhome homename | Deletes a home
-    permission: zPHomez.user
+    description: Deletes a home
+    usage: /delhome <name>
+    permission: RCHomes.user
   homeshelp:
-    description: /homeshelp | shows help
-    permission: zPHomez.user
+    description: Shows help
+    usage: /homeshelp
+    permission: RCHomes.user
   homemanager:
-    description: /homemanager used for home moderation
-    permission: zPHomez.manager
+    description: Admin commands for homes
+    permission: RCHomes.admin
