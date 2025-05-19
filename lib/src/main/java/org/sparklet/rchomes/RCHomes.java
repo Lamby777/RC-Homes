@@ -302,7 +302,7 @@ public class RCHomes extends JavaPlugin {
         ResultSet homes;
 
         try {
-            homes = prepared.getAllHomes(uuid);
+            homes = prepared.getPlayerHomes(uuid);
 
             player.sendMessage(ChatColor.BOLD + "Searching for homes... `" + query +
                     "`");

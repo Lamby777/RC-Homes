@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PreparedStatements {
-    private PreparedStatement _getAllHomes;
     private PreparedStatement _homesWithName;
     private PreparedStatement _homesSegment;
     private PreparedStatement _deleteHome;
@@ -13,7 +12,6 @@ public class PreparedStatements {
     private PreparedStatement _getHomesAmount;
     private PreparedStatement _getAreaHomes;
     private PreparedStatement _migrationDeleteServerCol;
-
     private PreparedStatement _getPlayerHomes;
     private Logger logger;
 
@@ -21,8 +19,6 @@ public class PreparedStatements {
         this.logger = logger;
 
         try {
-            // TODO wtf?
-            _getAllHomes = conn.prepareStatement("SELECT * FROM homes WHERE UUID = ?");
             _getPlayerHomes = conn.prepareStatement("SELECT * FROM homes WHERE UUID = ?");
 
             _homesWithName = conn.prepareStatement(
@@ -88,11 +84,6 @@ public class PreparedStatements {
     ResultSet getPlayerHomes(String uuid) throws SQLException {
         _getPlayerHomes.setString(1, uuid);
         return _getPlayerHomes.executeQuery();
-    }
-
-    ResultSet getAllHomes(String uuid) throws SQLException {
-        _getAllHomes.setString(1, uuid);
-        return _getAllHomes.executeQuery();
     }
 
     ResultSet getAreaHomes(String world, int[] coords) throws SQLException {
