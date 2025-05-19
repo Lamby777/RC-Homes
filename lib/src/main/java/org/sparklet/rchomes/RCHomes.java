@@ -59,7 +59,7 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    void migrateOldData() throws SQLException {
+    private void migrateOldData() throws SQLException {
         getLogger().info("Removing server column if exists");
         prepared.migrationDeleteServerCol();
         getLogger().info("Done!");
@@ -223,7 +223,7 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    boolean cmdJumpHomeOther(Player player, String[] args) {
+    private boolean cmdJumpHomeOther(Player player, String[] args) {
         if (args.length < 1) {
             return true;
         } else {
@@ -250,7 +250,7 @@ public class RCHomes extends JavaPlugin {
 
     // TODO what the actual hell is this method
     // possibly sus exploitable code in the clickevent part
-    void cmdSearchHomes(Player player, int pos) {
+    private void cmdSearchHomes(Player player, int pos) {
         String inWorld = player.getWorld().getName();
         Location ploc = player.getLocation();
         int[] coords = {
@@ -284,7 +284,7 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    void cmdDelHomeOther(Player player, String[] args) {
+    private void cmdDelHomeOther(Player player, String[] args) {
         String homeName = args[1];
         String homeOwnerUUID = Bukkit.getPlayerUniqueId(args[2]).toString();
 
@@ -297,7 +297,7 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    boolean cmdNewHome(Player player, String[] args) {
+    private boolean cmdNewHome(Player player, String[] args) {
         if (args.length > 1) {
             player.sendMessage("Only one argument allowed");
             return false;
@@ -326,7 +326,7 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    boolean cmdSetHome(Player player, String[] args) {
+    private boolean cmdSetHome(Player player, String[] args) {
         if (args.length > 1) {
             player.sendMessage("Only one argument allowed");
             return false;
@@ -338,7 +338,7 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    void cmdSwapHome(Player player) {
+    private void cmdSwapHome(Player player) {
         String uuid = player.getUniqueId().toString();
 
         try {
@@ -354,7 +354,7 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    void setHomeForPlayer(Player player, String homename) {
+    private void setHomeForPlayer(Player player, String homename) {
         Location loc = player.getLocation();
         String uuid = player.getUniqueId().toString();
 
@@ -367,7 +367,7 @@ public class RCHomes extends JavaPlugin {
         EITHER_CONTAINS,
     }
 
-    boolean searchHomes(Player player, String query, SearchMode mode) {
+    private boolean searchHomes(Player player, String query, SearchMode mode) {
         String uuid = player.getUniqueId().toString();
         ResultSet homes;
 
@@ -423,7 +423,7 @@ public class RCHomes extends JavaPlugin {
         return ratio <= (1.0 - HOME_SEARCH_STRICTNESS);
     }
 
-    boolean cmdListHomes(Player player, String[] args) {
+    private boolean cmdListHomes(Player player, String[] args) {
         String uuid = player.getUniqueId().toString();
 
         try {
@@ -492,7 +492,7 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    void cmdHome(Player player, String[] args) {
+    private void cmdHome(Player player, String[] args) {
         String home = args.length > 0 ? args[0] : "home";
 
         try {
@@ -547,7 +547,7 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    boolean deleteHome(Player player, String[] args) {
+    private boolean deleteHome(Player player, String[] args) {
         if (args.length == 0) {
             return false;
         }
