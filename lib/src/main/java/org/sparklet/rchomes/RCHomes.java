@@ -33,7 +33,7 @@ public class RCHomes extends JavaPlugin {
     // the name used for the home processed by swap commands
     private static final String SWAP_HOME_NAME = "__swap";
 
-    private SemVerHelper semverHelper = new SemVerHelper(this);
+    SemVerHelper semverHelper = new SemVerHelper(this);
     private static Connection conn;
     private static DatabaseLogin dbLogin;
     private PreparedStatements prepared;
@@ -61,15 +61,6 @@ public class RCHomes extends JavaPlugin {
         }
     }
 
-    private void migrateOldData() throws SQLException {
-        getLogger().info("Removing server column if exists");
-        prepared.migrationDeleteServerCol();
-        getLogger().info("Done!");
-
-        getLogger().info("RCH Migration complete. Will now overwrite config `last-version`.");
-        semverHelper.overwriteLastVersion(this);
-    }
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -83,13 +74,11 @@ public class RCHomes extends JavaPlugin {
 
         try {
             // stuff to run when updating from older version
-            migrateOldData();
+            dbLogin.migrateOldData(this);
         } catch (SQLException e) {
-            Logger.getLogger(RCHomes.class.getName())
-                    .log(
-                            Level.WARNING,
-                            "Failed to run backwards-compatibility checks... Trying again next load.",
-                            e);
+            Logger.getLogger(RCHomes.class.getName()).log(
+                    Level.WARNING,
+                    "Failed to run backwards-compatibility checks... Trying again next load.", e);
         }
     }
 
@@ -124,7 +113,6 @@ public class RCHomes extends JavaPlugin {
                     return cmdListHomes(player, args);
 
                 case "home":
-                    // returns bool from inside fn
                     cmdHome(player, args);
                     return true;
 

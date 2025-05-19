@@ -9,9 +9,8 @@ with MySQL/MariaDB support.
 - Admins can see/edit nearby homes of players
 - Convenient commands to flip between 2 temporary home slots (wip)
 - Supports wildcards for deleting homes (wip)
-- Drop-in replacement for zP-Homes 0.13.0, just copy over your config file
-  - Removed some compatibility checks, so update to 0.13.0 before switching
-  - Switching back to zP-Homes probably won't work, don't count on it
+- Your zP-Homes 0.13.0 database will carry over! No need to start over.
+  - Switching back to zP-Homes probably won't work after migration. Don't count on it.
 
 # Commands
 

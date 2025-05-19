@@ -11,7 +11,6 @@ public class PreparedStatements {
     private PreparedStatement _setHome;
     private PreparedStatement _getHomesAmount;
     private PreparedStatement _getAreaHomes;
-    private PreparedStatement _migrationDeleteServerCol;
     private PreparedStatement _getPlayerHomes;
     private Logger logger;
 
@@ -35,21 +34,11 @@ public class PreparedStatements {
 
             _getHomesAmount = conn.prepareStatement("SELECT COUNT(*) from homes where UUID = ?");
 
-            _migrationDeleteServerCol = conn.prepareStatement("ALTER TABLE homes DROP COLUMN IF EXISTS server");
-
             _getAreaHomes = conn.prepareStatement(
                     "SELECT * FROM homes WHERE world = ? AND x > ? AND x < ? AND z > ? AND z < ?");
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to init prepared", e);
-        }
-    }
-
-    void migrationDeleteServerCol() {
-        try {
-            _migrationDeleteServerCol.executeQuery();
-        } catch (SQLException e) {
-            RCHomes.skillIssue(e);
         }
     }
 

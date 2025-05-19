@@ -1,8 +1,6 @@
 package org.sparklet.rchomes;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -35,5 +33,35 @@ public class DatabaseLogin {
     public Connection getConnection() throws SQLException {
         String addr = "jdbc:mysql://" + address + ":" + port + "/" + database;
         return DriverManager.getConnection(addr, username, password);
+    }
+
+    public void migrateOldData(RCHomes rch) throws SQLException {
+        boolean migrated = false;
+        final var logger = rch.getLogger();
+        final var conn = getConnection();
+        final DatabaseMetaData md = conn.getMetaData();
+
+        // 0.1.0 Migration - Remove server column
+        var serverColumnExists = md.getColumns(null, null, database, "server")
+                .next();
+
+        if (serverColumnExists) {
+            logger.info("Removing server column...");
+            var stmt = conn.createStatement();
+            stmt.execute("ALTER TABLE homes DROP COLUMN server");
+
+            logger.info("Done!");
+            migrated = true;
+        }
+
+        if (!migrated) {
+            logger.info("No migrations were necessary.");
+            return;
+        }
+
+        logger.info("RCH migrations are complete. Will now overwrite config `last-version`.");
+        // TODO decouple file writing stuff from semverHelper
+        rch.semverHelper.overwriteLastVersion(rch);
+        conn.close();
     }
 }
