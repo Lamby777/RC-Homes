@@ -475,7 +475,7 @@ public class RCHomes extends JavaPlugin {
         String uuid = player.getUniqueId().toString();
 
         try {
-            player.sendMessage("| Going to: " + home + " | ");
+            player.sendMessage("| Going to: " + home + " |");
             var exists = sendPlayerToHome(player, uuid, home);
 
             if (exists) {
@@ -489,31 +489,35 @@ public class RCHomes extends JavaPlugin {
     }
 
     /**
-     * Teleports the player to another player's home
+     * Command that teleports the player to another player's home
      *
      * @param player The player to teleport
      * @param args   The arguments passed to the command
-     * @return i honestly don't fuckin know, prob rewriting this myself later
      */
-    private boolean cmdHomeOther(Player player, String[] args) {
-        if (args.length < 1) {
-            return true; // TODO why true?????????
-        }
-
-        String uuid = Bukkit.getPlayerUniqueId(args[1]).toString();
+    private void cmdHomeOther(Player player, String[] args) {
+        String homeowner = args[1];
         String home = args[2];
 
+        String homeownerUUID = Bukkit.getPlayerUniqueId(homeowner).toString();
+
         try {
-            sendPlayerToHome(player, uuid, home);
+            player.sendMessage("| Going to: " + home + " (User: " + homeowner + ") |");
+            var exists = sendPlayerToHome(player, homeownerUUID, home);
+
+            if (exists) {
+                player.sendMessage("Teleported to: " + home + " (User: " + homeowner + ")");
+            } else {
+                player.sendMessage("Home not found");
+            }
         } catch (SQLException e) {
             skillIssue(e);
         }
-        return true;
     }
 
     /**
-     * Teleports the player to the home with the given name
-     * 
+     * Internal method that teleports the player to the home with the given name
+     * This is meant to be used in multiple other methods
+     *
      * @param target    The player to teleport
      * @param homeowner The home owner's UUID
      * @param home      The name of the home
