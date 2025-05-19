@@ -156,9 +156,14 @@ public class RCHomes extends JavaPlugin {
      */
     private void showHelp(Player player, String page) {
         player.sendMessage("RCHomes by refcherry");
+        String warning = "Warning: You don't have permission to use these!";
 
         switch (page) {
             case null:
+                if (!player.hasPermission("rchomes.user")) {
+                    player.sendMessage(warning);
+                }
+
                 player.sendMessage("Common Commands:");
                 player.sendMessage("`/home` - Teleports to your home");
                 player.sendMessage("`/home [name]` - Teleports to the specified home. Defaults to `home`.");
@@ -172,12 +177,20 @@ public class RCHomes extends JavaPlugin {
                 player.sendMessage("For admin commands, do /homeshelp admin");
                 break;
             case "swap":
+                if (!player.hasPermission("rchomes.swap")) {
+                    player.sendMessage(warning);
+                }
+
                 player.sendMessage("Swap Commands:");
                 player.sendMessage("`/brb` - Set your swap home. Short for `/sethome __swap`.");
                 player.sendMessage("`/ret` - Return to your swap home. Short for `/home __swap`.");
                 player.sendMessage("`/swap` - Swaps your current location with the home `__swap`.");
                 break;
             case "admin":
+                if (!player.hasPermission("rchomes.admin")) {
+                    player.sendMessage(warning);
+                }
+
                 player.sendMessage("Admin Commands:");
                 player.sendMessage("`/homemanager area <n>` - Shows homes in a cube of radius (half-length) <n>.");
                 player.sendMessage("`/homemanager delhome <name> <username>` - Deletes the specified home.");

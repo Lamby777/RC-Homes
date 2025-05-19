@@ -9,6 +9,10 @@ main: org.sparklet.rchomes.RCHomes
 database: true
 
 commands:
+  homeshelp:
+    description: Shows help
+    usage: /homeshelp
+    permission: RCHomes.user
   newhome:
     description: Create a new home, but don't overwrite if it already exists.
     usage: /newhome <name>
@@ -28,10 +32,6 @@ commands:
   delhome:
     description: Deletes a home
     usage: /delhome <name>
-    permission: RCHomes.user
-  homeshelp:
-    description: Shows help
-    usage: /homeshelp
     permission: RCHomes.user
   homemanager:
     description: Admin commands for homes
