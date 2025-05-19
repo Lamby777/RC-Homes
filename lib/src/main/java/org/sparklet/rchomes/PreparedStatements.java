@@ -31,7 +31,7 @@ public class PreparedStatements {
                     "DELETE FROM homes WHERE UUID = ? AND NAME = ?");
 
             _setHome = conn.prepareStatement(
-                    "INSERT INTO homes (UUID,Name,world,x,y,z,yaw,pitch,server) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    "INSERT INTO homes (UUID,Name,world,x,y,z,yaw,pitch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
             _getHomesAmount = conn.prepareStatement("SELECT COUNT(*) from homes where UUID = ?");
 
