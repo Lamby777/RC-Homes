@@ -63,4 +63,6 @@ eventually see the value using in this feature.
 
 # Installation
 
-Run `./gradlew build` to build the plugin. The jar file will be in `./build/libs/`.
+Run `./gradlew shadowJar` to build the plugin. The jar file will be at `./build/libs/lib-all.jar`.
+
+Still need to figure out how to make this simpler. Sorry.
