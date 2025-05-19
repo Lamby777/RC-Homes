@@ -4,8 +4,8 @@ last-version: 0.1.0
 # Database configuration
 db:
   # Login info for the database
-  - username: user
-  - password: password
-  - address: localhost
-  - database: backathome
-  - port: 3306
+  username: user
+  password: password
+  address: localhost
+  database: backathome
+  port: 3306
