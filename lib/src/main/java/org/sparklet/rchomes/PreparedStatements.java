@@ -53,26 +53,23 @@ public class PreparedStatements {
         }
     }
 
-    void setHome(String uuid, String home, HomeLocation hloc) {
+    void setHome(String uuid, String home, HomeLocation hloc) throws SQLException {
         deleteHome(uuid, home);
 
         logger.info("Inserting user home " + uuid + " with Name:" + home);
 
-        try {
-            _setHome.setString(1, uuid);
-            _setHome.setString(2, home);
-            _setHome.setString(3, hloc.worldname);
-            _setHome.setDouble(4, hloc.loc.getX());
-            _setHome.setDouble(5, hloc.loc.getY());
-            _setHome.setDouble(6, hloc.loc.getZ());
-            _setHome.setFloat(7, hloc.loc.getYaw());
-            _setHome.setFloat(8, hloc.loc.getPitch());
+        _setHome.setString(1, uuid);
+        _setHome.setString(2, home);
+        _setHome.setString(3, hloc.worldname);
+        _setHome.setDouble(4, hloc.loc.getX());
+        _setHome.setDouble(5, hloc.loc.getY());
+        _setHome.setDouble(6, hloc.loc.getZ());
+        _setHome.setFloat(7, hloc.loc.getYaw());
+        _setHome.setFloat(8, hloc.loc.getPitch());
 
-            // phew, it's over
-            _setHome.execute();
-        } catch (SQLException e) {
-            RCHomes.skillIssue(e);
-        }
+        // phew, it's over
+        _setHome.execute();
+
     }
 
     ResultSet homesWithName(String uuid, String home) throws SQLException {

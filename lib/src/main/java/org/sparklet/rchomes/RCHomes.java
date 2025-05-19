@@ -294,11 +294,14 @@ public class RCHomes extends JavaPlugin {
         }
 
         if (exists) {
-            player.sendMessage("Home " + home +
-                    " already exists! Use /sethome to skip this check.");
+            player.sendMessage("Home " + home + " already exists! Use /sethome to skip this check.");
         } else {
-            setHomeAtSelf(player, home);
-            player.sendMessage("New home created: " + home);
+            var success = setHomeAtSelf(player, home);
+            if (success) {
+                player.sendMessage("New home created: " + home);
+            } else {
+                player.sendMessage("Error occurred while creating home...");
+            }
         }
 
         return true;
@@ -311,21 +314,47 @@ public class RCHomes extends JavaPlugin {
         }
         String home = args.length > 0 ? args[0] : "home";
 
-        setHomeAtSelf(player, home);
-        player.sendMessage("Home set: " + home);
+        var success = setHomeAtSelf(player, home);
+        if (success) {
+            player.sendMessage("Home set: " + home);
+        } else {
+            player.sendMessage("Error occurred while setting home...");
+        }
+
         return true;
     }
 
-    private void setHomeAtSelf(Player player, String homename) {
+    /**
+     * Sets the home at the given player's current location
+     *
+     * @param player   The player to set the home for
+     * @param homename The name of the home
+     * @return true if the home was set successfully, false otherwise
+     */
+    private boolean setHomeAtSelf(Player player, String homename) {
         Location loc = player.getLocation();
-        setHomeAt(loc, player, homename);
+        return setHomeAt(loc, player, homename);
     }
 
-    private void setHomeAt(Location loc, Player player, String homename) {
+    /**
+     * Sets the home at the given location for the given player
+     *
+     * @param loc      The location to set the home at
+     * @param player   The player to set the home for
+     * @param homename The name of the home
+     * @return true if the home was set successfully, false otherwise
+     */
+    private boolean setHomeAt(Location loc, Player player, String homename) {
         String uuid = player.getUniqueId().toString();
 
         HomeLocation hloc = new HomeLocation(loc, player.getWorld().getName());
-        prepared.setHome(uuid, homename, hloc);
+        try {
+            prepared.setHome(uuid, homename, hloc);
+            return true;
+        } catch (SQLException e) {
+            skillIssue(e);
+            return false;
+        }
     }
 
     private static enum SearchMode {
@@ -597,7 +626,7 @@ public class RCHomes extends JavaPlugin {
     }
 
     /**
-     * Generic severe error logger
+     * Generic severe error logging method
      */
     static void skillIssue(Exception e) {
         Logger.getLogger(RCHomes.class.getName()).log(Level.SEVERE, null, e);
