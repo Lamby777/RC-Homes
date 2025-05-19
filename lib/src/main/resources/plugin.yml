@@ -3,10 +3,13 @@
 
 author: refcherry
 name: RCHomes
+contributors:
+  - refcherry
+  - III_zP0_III
 version: 0.1.0
+api-version: 1.18
 load: POSTWORLD
 main: org.sparklet.rchomes.RCHomes
-database: true
 
 commands:
   homeshelp:
