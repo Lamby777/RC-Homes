@@ -1,13 +1,17 @@
 package org.sparklet.rchomes;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class DatabaseLogin {
-    public String address;
-    public String username;
-    public String password;
-    public String database;
-    public int port;
+    private String address;
+    private String username;
+    private String password;
+    private String database;
+    private int port;
 
     public static DatabaseLogin fromConfig(RCHomes rch) {
         FileConfiguration config = rch.getConfig();
@@ -25,6 +29,11 @@ public class DatabaseLogin {
         this.username = username;
         this.password = password;
         this.database = database;
-        this.port = port; // TODO actually use this
+        this.port = port;
+    }
+
+    public Connection getConnection() throws SQLException {
+        String addr = "jdbc:mysql://" + address + ":" + port + "/" + database;
+        return DriverManager.getConnection(addr, username, password);
     }
 }

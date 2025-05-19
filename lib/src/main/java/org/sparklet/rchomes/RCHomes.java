@@ -32,24 +32,26 @@ public class RCHomes extends JavaPlugin {
     private SemVerHelper semverHelper = new SemVerHelper(this);
 
     public String host, port, database, username, password;
-    // static MysqlDataSource data = new MysqlDataSource();
-    static Statement stmt;
-    static Connection conn;
-    static Statement query;
+    private static Connection conn;
+    private static DatabaseLogin dbLogin;
     private PreparedStatements prepared;
-    private DatabaseLogin dbLogin;
-    ResultSet Lookup;
 
     private void newConnection() {
         try {
-            conn = DriverManager.getConnection(
-                    "jdbc:mysql://" + dbLogin.address + "/" + dbLogin.database, dbLogin.username, dbLogin.password);
+            conn = dbLogin.getConnection();
             prepared = new PreparedStatements(conn, getLogger());
 
-            // TODO prepared statement
-            stmt = conn.createStatement();
-            stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS homes (ID int PRIMARY KEY NOT NULL AUTO_INCREMENT, UUID varchar(255), Name varchar(255), world varchar(255), x double, y double, z double, yaw float DEFAULT - 1.0, pitch float DEFAULT - 1.0)");
+            conn.createStatement().execute("""
+                        CREATE TABLE IF NOT EXISTS homes (
+                            ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+                            UUID VARCHAR(255),
+                            Name VARCHAR(255),
+                            world VARCHAR(255),
+                            x DOUBLE, y DOUBLE, z DOUBLE,
+                            yaw FLOAT DEFAULT -1.0,
+                            pitch FLOAT DEFAULT -1.0
+                        )
+                    """);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -134,12 +136,6 @@ public class RCHomes extends JavaPlugin {
 
                         } else if (args[0].equalsIgnoreCase("delhome")) {
                             cmdDelHomeOther(player, args);
-
-                        } else if (args[0].equalsIgnoreCase("help")) {
-                            player.sendMessage("/homemanager area 9 -> shows homes in a radius of 9");
-                            player.sendMessage("/homemanager delhome homename username -> deletes home");
-                            player.sendMessage("/homemanager tp username homename -> teleports to user home");
-                            player.sendMessage("/homemanager playerhomes playername");
 
                         } else if (args[0].equalsIgnoreCase("tp")) {
                             cmdJumpHomeOther(player, args);
