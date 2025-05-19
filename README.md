@@ -19,6 +19,8 @@ with MySQL/MariaDB support.
 
 - `/home [name]` - Teleports to the specified home. Defaults to `home`.
 - `/homes` - Lists all your homes
+- `/homes search [name]` - Searches for homes matching the name.
+- `/homes fuzzy [name]` - Searches for homes that almost match the name.
 - `/sethome [name]` - Sets a home at your current location. Defaults to `home`.
 - `/newhome [name]` - Like `/sethome`, but won't override existing homes.
 - `/delhome [name]` - Deletes the specified home.

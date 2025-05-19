@@ -25,6 +25,6 @@ public class DatabaseLogin {
         this.username = username;
         this.password = password;
         this.database = database;
-        this.port = port;
+        this.port = port; // TODO actually use this
     }
 }

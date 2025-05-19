@@ -112,18 +112,8 @@ public class RCHomes extends JavaPlugin {
                     return cmdListHomes(player, args);
 
                 case "homeshelp":
-                    // TODO
-                    player.sendMessage("RCHomes by refcherry");
-                    player.sendMessage("Use '/home <name>' to teleport to a home");
-                    player.sendMessage("Use '/homes <page>' to see all your homes");
-                    player.sendMessage(
-                            "Use '/homes search <name>' to search for homes containing exact names");
-                    player.sendMessage(
-                            "Use '/homes searchl <name>' to search for homes with similar names");
-                    player.sendMessage("Use '/newhome <name>' to only create a new home");
-                    player.sendMessage("Use '/sethome <name>' to create or update a home");
-                    player.sendMessage("Use '/delhome <name>' to delete a home");
-                    player.sendMessage("homesmanager /homemanager help");
+                    // if no args, the page should be null
+                    showHelp(player, args.length == 0 ? null : args[0]);
                     return true;
 
                 case "home":
@@ -138,7 +128,7 @@ public class RCHomes extends JavaPlugin {
                         if (args[0].equalsIgnoreCase("area")) {
                             if (args.length > 1) {
                                 int pos = Integer.parseInt(args[1]);
-                                player.sendMessage("looking for homes: ");
+                                player.sendMessage("looking for homes:");
                                 cmdSearchHomes(player, pos);
                             }
 
@@ -160,6 +150,48 @@ public class RCHomes extends JavaPlugin {
         }
 
         return false;
+    }
+
+    /**
+     * Shows help for the plugin
+     *
+     * @param player The player to show the help to
+     * @param page   The category page to show (or null for default)
+     */
+    private void showHelp(Player player, String page) {
+        player.sendMessage("RCHomes by refcherry");
+
+        switch (page) {
+            case null:
+                player.sendMessage("Common Commands:");
+                player.sendMessage("`/home` - Teleports to your home");
+                player.sendMessage("`/home [name]` - Teleports to the specified home. Defaults to `home`.");
+                player.sendMessage("`/homes` - Lists all your homes");
+                player.sendMessage("`/homes search [name]` - Searches for homes matching the name.");
+                player.sendMessage("`/homes fuzzy [name]` - Searches for homes that almost match the name.");
+                player.sendMessage("`/sethome [name]` - Sets a home at your current location. Defaults to `home`.");
+                player.sendMessage("`/newhome [name]` - Like `/sethome`, but won't override existing homes.");
+                player.sendMessage("`/delhome [name]` - Deletes the specified home.");
+                player.sendMessage("For swap/temp home commands, do /homeshelp swap");
+                player.sendMessage("For admin commands, do /homeshelp admin");
+                break;
+            case "swap":
+                player.sendMessage("Swap Commands:");
+                player.sendMessage("`/brb` - Set your swap home. Short for `/sethome __swap`.");
+                player.sendMessage("`/ret` - Return to your swap home. Short for `/home __swap`.");
+                player.sendMessage("`/swap` - Swaps your current location with the home `__swap`.");
+                break;
+            case "admin":
+                player.sendMessage("Admin Commands:");
+                player.sendMessage("`/homemanager area <n>` - Shows homes in a cube of radius (half-length) <n>.");
+                player.sendMessage("`/homemanager delhome <name> <username>` - Deletes the specified home.");
+                player.sendMessage("`/homemanager tp <username> <name>` - Teleports to the specified user's home.");
+                player.sendMessage("`/homemanager playerhomes <username>` - Shows all homes of the specified user.");
+                break;
+            default:
+                player.sendMessage("Unknown help page: " + page);
+                break;
+        }
     }
 
     boolean cmdJumpHomeOther(Player player, String[] args) {
@@ -367,7 +399,7 @@ public class RCHomes extends JavaPlugin {
                     String[] queryW = Arrays.copyOfRange(args, 1, args.length);
                     String query = String.join(" ", queryW);
 
-                    SearchMode mode = firstArg.equals("searchl")
+                    SearchMode mode = firstArg.equals("fuzzy")
                             ? SearchMode.LEVENSHTEIN
                             : SearchMode.EITHER_CONTAINS;
 
