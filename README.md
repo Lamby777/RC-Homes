@@ -1,10 +1,11 @@
 # RC-Homes
 
-Hard fork of [zP-Homes](https://github.com/IIIzP0III/Back-at-Home/) - An infinite homes plugin for Paper
-with MySQL/MariaDB support.
+Hard fork of zP-Homes
 
-- Tested on 1.21
-- Uses MySQL or MariaDB
+An infinite homes plugin for Paper with MySQL/MariaDB support.
+
+- Supports 1.18+, tested on 1.21
+- Uses MySQL or MariaDB (maybe SQLite support if enough people care)
 - Fast performance, even when huge amounts of homes are set
 - Admins can see/edit nearby homes of players
 - Convenient commands for swapping between locations (temporary homes)
