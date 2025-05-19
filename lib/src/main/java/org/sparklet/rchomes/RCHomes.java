@@ -297,7 +297,7 @@ public class RCHomes extends JavaPlugin {
             player.sendMessage("Home " + home +
                     " already exists! Use /sethome to skip this check.");
         } else {
-            setHomeForPlayer(player, home);
+            setHomeAtSelf(player, home);
             player.sendMessage("New home created: " + home);
         }
 
@@ -311,13 +311,17 @@ public class RCHomes extends JavaPlugin {
         }
         String home = args.length > 0 ? args[0] : "home";
 
-        setHomeForPlayer(player, home);
+        setHomeAtSelf(player, home);
         player.sendMessage("Home set: " + home);
         return true;
     }
 
-    private void setHomeForPlayer(Player player, String homename) {
+    private void setHomeAtSelf(Player player, String homename) {
         Location loc = player.getLocation();
+        setHomeAt(loc, player, homename);
+    }
+
+    private void setHomeAt(Location loc, Player player, String homename) {
         String uuid = player.getUniqueId().toString();
 
         HomeLocation hloc = new HomeLocation(loc, player.getWorld().getName());
@@ -455,13 +459,16 @@ public class RCHomes extends JavaPlugin {
     }
 
     private void cmdSwapHome(Player player) {
+        Location oldLocation = player.getLocation();
+
         try {
             var exists = sendPlayerToOwnHome(player, SWAP_HOME_NAME);
 
             if (exists) {
-                player.sendMessage("Teleported to swap home.");
+                setHomeAt(oldLocation, player, SWAP_HOME_NAME);
+                player.sendMessage("Swap successful!");
             } else {
-                player.sendMessage("Swap home not found. Use `/brb` first.");
+                player.sendMessage("Swap home not found. Use `/brb` first!");
             }
         } catch (SQLException e) {
             skillIssue(e);
