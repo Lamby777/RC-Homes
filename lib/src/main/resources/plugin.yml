@@ -36,6 +36,18 @@ commands:
     description: Deletes a home
     usage: /delhome <name>
     permission: RCHomes.user
+  brb:
+    description: Set your swap home
+    usage: /brb
+    permission: RCHomes.swap
+  ret:
+    description: Return to your swap home
+    usage: /ret
+    permission: RCHomes.swap
+  swap:
+    description: Swap your current location with your swap home
+    usage: /swap
+    permission: RCHomes.swap
   homemanager:
     description: Admin commands for homes
     permission: RCHomes.admin

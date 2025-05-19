@@ -25,13 +25,13 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class RCHomes extends JavaPlugin {
     // homes listed per /homes page
-    public static final int PAGE_LENGTH = 16;
+    private static final int PAGE_LENGTH = 16;
     // At least this percent of the name should match
-    public static final double HOME_SEARCH_STRICTNESS = 0.30;
+    private static final double HOME_SEARCH_STRICTNESS = 0.30;
+    private static final String SWAP_HOME_NAME = "__swap";
 
     private SemVerHelper semverHelper = new SemVerHelper(this);
 
-    public String host, port, database, username, password;
     private static Connection conn;
     private static DatabaseLogin dbLogin;
     private PreparedStatements prepared;
@@ -123,7 +123,19 @@ public class RCHomes extends JavaPlugin {
 
                 case "home":
                     // returns bool from inside fn
-                    gotoHome(player, args);
+                    cmdHome(player, args);
+                    return true;
+
+                case "brb":
+                    cmdSetHome(player, new String[] { "__swap" });
+                    return true;
+
+                case "ret":
+                    cmdHome(player, new String[] { "__swap" });
+                    return true;
+
+                case "swap":
+                    cmdSwapHome(player);
                     return true;
 
                 case "delhome":
@@ -181,6 +193,7 @@ public class RCHomes extends JavaPlugin {
                 player.sendMessage("For swap/temp home commands, do /homeshelp swap");
                 player.sendMessage("For admin commands, do /homeshelp admin");
                 break;
+
             case "swap":
                 if (!player.hasPermission("rchomes.swap")) {
                     player.sendMessage(warning);
@@ -191,6 +204,7 @@ public class RCHomes extends JavaPlugin {
                 player.sendMessage("`/ret` - Return to your swap home. Short for `/home __swap`.");
                 player.sendMessage("`/swap` - Swaps your current location with the home `__swap`.");
                 break;
+
             case "admin":
                 if (!player.hasPermission("rchomes.admin")) {
                     player.sendMessage(warning);
@@ -202,6 +216,7 @@ public class RCHomes extends JavaPlugin {
                 player.sendMessage("`/homemanager tp <username> <name>` - Teleports to the specified user's home.");
                 player.sendMessage("`/homemanager playerhomes <username>` - Shows all homes of the specified user.");
                 break;
+
             default:
                 player.sendMessage("Unknown help page: " + page);
                 break;
@@ -224,22 +239,7 @@ public class RCHomes extends JavaPlugin {
 
                 player.sendMessage("| Going to: " + home + " | ");
 
-                Location loc = player.getLocation();
-                loc.setWorld(Bukkit.getWorld(rs.getString("world")));
-                loc.setX(rs.getDouble("x"));
-                loc.setY(rs.getDouble("y"));
-                loc.setZ(rs.getDouble("z"));
-                float yaw = rs.getFloat("yaw");
-                float pitch = rs.getFloat("pitch");
-
-                if (yaw != -1.0) {
-                    loc.setYaw(yaw);
-                }
-                if (pitch != -1.0) {
-                    loc.setPitch(pitch);
-                }
-
-                player.teleport(loc);
+                sendPlayerToHome(player, rs);
                 player.sendMessage("Teleported to: " + home);
             } catch (SQLException e) {
                 skillIssue(e);
@@ -336,6 +336,22 @@ public class RCHomes extends JavaPlugin {
         setHomeForPlayer(player, home);
         player.sendMessage("Home set: " + home);
         return true;
+    }
+
+    void cmdSwapHome(Player player) {
+        String uuid = player.getUniqueId().toString();
+
+        try {
+            var exists = sendPlayerToHome(player, SWAP_HOME_NAME);
+
+            if (exists) {
+                player.sendMessage("Teleported to swap home.");
+            } else {
+                player.sendMessage("Swap home not found. Use `/brb` first.");
+            }
+        } catch (SQLException e) {
+            skillIssue(e);
+        }
     }
 
     void setHomeForPlayer(Player player, String homename) {
@@ -476,39 +492,59 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    void gotoHome(Player player, String[] args) {
-        String uuid = player.getUniqueId().toString();
+    void cmdHome(Player player, String[] args) {
         String home = args.length > 0 ? args[0] : "home";
 
         try {
-            ResultSet rs = prepared.homesWithName(uuid, home);
-            if (!rs.next()) {
-                player.sendMessage("Home not found");
-                return;
-            }
-
             player.sendMessage("| Going to: " + home + " | ");
+            var exists = sendPlayerToHome(player, home);
 
-            Location loc = player.getLocation();
-            loc.setWorld(Bukkit.getWorld(rs.getString("world")));
-            loc.setX(rs.getDouble("x"));
-            loc.setY(rs.getDouble("y"));
-            loc.setZ(rs.getDouble("z"));
-            float yaw = rs.getFloat("yaw");
-            float pitch = rs.getFloat("pitch");
-
-            if (yaw != -1.0) {
-                loc.setYaw(yaw);
+            if (exists) {
+                player.sendMessage("Teleported to: " + home);
+            } else {
+                player.sendMessage("Home not found");
             }
-            if (pitch != -1.0) {
-                loc.setPitch(pitch);
-            }
-
-            player.teleport(loc);
-            player.sendMessage("Teleported to: " + home);
         } catch (SQLException e) {
             skillIssue(e);
         }
+    }
+
+    /**
+     * Teleports the player to the home with the given name
+     * 
+     * @param player The player to teleport
+     * @param home   The name of the home
+     * @return true if the home exists, false otherwise
+     * @throws SQLException if the database query fails
+     */
+    private boolean sendPlayerToHome(Player player, String home) throws SQLException {
+        String uuid = player.getUniqueId().toString();
+
+        ResultSet rs = prepared.homesWithName(uuid, home);
+        if (!rs.next()) {
+            return false;
+        }
+
+        Location loc = player.getLocation();
+
+        loc.setWorld(Bukkit.getWorld(rs.getString("world")));
+        loc.setX(rs.getDouble("x"));
+        loc.setY(rs.getDouble("y"));
+        loc.setZ(rs.getDouble("z"));
+
+        float yaw = rs.getFloat("yaw");
+        float pitch = rs.getFloat("pitch");
+
+        if (yaw != -1.0) {
+            loc.setYaw(yaw);
+        }
+
+        if (pitch != -1.0) {
+            loc.setPitch(pitch);
+        }
+
+        player.teleport(loc);
+        return true;
     }
 
     boolean deleteHome(Player player, String[] args) {
