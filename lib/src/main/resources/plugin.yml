@@ -23,7 +23,10 @@ commands:
     permission: RCHomes.user
   homes:
     description: List your homes
-    usage: /homes <page>
+    usage: |
+      /homes <page>
+      /homes search <query>
+      /homes fuzzy <query>
     permission: RCHomes.user
   home:
     description: Teleports you to your home

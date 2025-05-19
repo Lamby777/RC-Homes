@@ -38,6 +38,8 @@ public class RCHomes extends JavaPlugin {
 
     private void newConnection() {
         try {
+            // TODO holy crap did they actually never code this to .close() connections?
+            // i swear if they aren't gc'd or something like that i'm gonna explode
             conn = dbLogin.getConnection();
             prepared = new PreparedStatements(conn, getLogger());
 
@@ -103,8 +105,14 @@ public class RCHomes extends JavaPlugin {
 
         if (interpreter instanceof Player) {
             switch (input) {
+                case "homeshelp":
+                    // if no args, the page should be null
+                    showHelp(player, args.length == 0 ? null : args[0]);
+                    return true;
+
                 case "newhome":
-                    return cmdNewHome(player, args);
+                    cmdNewHome(player, args);
+                    return true;
 
                 case "sethome":
                     cmdSetHome(player, args);
@@ -113,16 +121,13 @@ public class RCHomes extends JavaPlugin {
                 case "homes":
                     return cmdListHomes(player, args);
 
-                case "homeshelp":
-                    // if no args, the page should be null
-                    showHelp(player, args.length == 0 ? null : args[0]);
-                    return true;
-
                 case "home":
                     // returns bool from inside fn
-                    return gotoHome(player, args);
+                    gotoHome(player, args);
+                    return true;
 
                 case "delhome":
+                    // TODO wildcards
                     return deleteHome(player, args);
 
                 case "homemanager":
@@ -204,7 +209,6 @@ public class RCHomes extends JavaPlugin {
     }
 
     boolean cmdJumpHomeOther(Player player, String[] args) {
-
         if (args.length < 1) {
             return true;
         } else {
@@ -245,6 +249,7 @@ public class RCHomes extends JavaPlugin {
     }
 
     // TODO what the actual hell is this method
+    // possibly sus exploitable code in the clickevent part
     void cmdSearchHomes(Player player, int pos) {
         String inWorld = player.getWorld().getName();
         Location ploc = player.getLocation();
@@ -293,6 +298,10 @@ public class RCHomes extends JavaPlugin {
     }
 
     boolean cmdNewHome(Player player, String[] args) {
+        if (args.length > 1) {
+            player.sendMessage("Only one argument allowed");
+            return false;
+        }
         String home = args.length > 0 ? args[0] : "home";
         String uuid = player.getUniqueId().toString();
 
@@ -303,29 +312,33 @@ public class RCHomes extends JavaPlugin {
         } catch (SQLException e) {
             player.sendMessage("Error occurred while checking if home exists...");
             skillIssue(e);
-
-            return false;
+            return true;
         }
 
         if (exists) {
             player.sendMessage("Home " + home +
                     " already exists! Use /sethome to skip this check.");
         } else {
-            baseSetHome(player, home);
+            setHomeForPlayer(player, home);
             player.sendMessage("New home created: " + home);
         }
 
-        return exists;
+        return true;
     }
 
-    void cmdSetHome(Player player, String[] args) {
+    boolean cmdSetHome(Player player, String[] args) {
+        if (args.length > 1) {
+            player.sendMessage("Only one argument allowed");
+            return false;
+        }
         String home = args.length > 0 ? args[0] : "home";
 
-        baseSetHome(player, home);
+        setHomeForPlayer(player, home);
         player.sendMessage("Home set: " + home);
+        return true;
     }
 
-    void baseSetHome(Player player, String homename) {
+    void setHomeForPlayer(Player player, String homename) {
         Location loc = player.getLocation();
         String uuid = player.getUniqueId().toString();
 
@@ -412,7 +425,9 @@ public class RCHomes extends JavaPlugin {
                             ? SearchMode.LEVENSHTEIN
                             : SearchMode.EITHER_CONTAINS;
 
-                    return searchHomes(player, query, mode);
+                    // TODO make the method only responsible for searching, not printing
+                    searchHomes(player, query, mode);
+                    return true;
                 }
 
                 // not searching, so it must be a page number
@@ -422,7 +437,6 @@ public class RCHomes extends JavaPlugin {
                     fail = true;
                 } finally {
                     if (fail || page < 0) {
-                        player.sendMessage("Usage: /homes [page]");
                         return false;
                     }
                 }
@@ -457,13 +471,12 @@ public class RCHomes extends JavaPlugin {
 
         } catch (SQLException e) {
             skillIssue(e);
-            return false;
         }
 
         return true;
     }
 
-    boolean gotoHome(Player player, String[] args) {
+    void gotoHome(Player player, String[] args) {
         String uuid = player.getUniqueId().toString();
         String home = args.length > 0 ? args[0] : "home";
 
@@ -471,7 +484,7 @@ public class RCHomes extends JavaPlugin {
             ResultSet rs = prepared.homesWithName(uuid, home);
             if (!rs.next()) {
                 player.sendMessage("Home not found");
-                return false;
+                return;
             }
 
             player.sendMessage("| Going to: " + home + " | ");
@@ -496,29 +509,28 @@ public class RCHomes extends JavaPlugin {
         } catch (SQLException e) {
             skillIssue(e);
         }
-        return true;
     }
 
     boolean deleteHome(Player player, String[] args) {
+        if (args.length == 0) {
+            return false;
+        }
+
         String uuid = player.getUniqueId().toString();
 
         try {
-            if (args.length > 0) {
-                String home = args[0];
+            String home = args[0];
 
-                if (prepared.homeExists(uuid, home)) {
-                    prepared.deleteHome(uuid, home);
-                    player.sendMessage("Home " + home + " Deleted");
-                } else {
-                    player.sendMessage("Home " + home + " not found");
-                }
+            if (prepared.homeExists(uuid, home)) {
+                prepared.deleteHome(uuid, home);
+                player.sendMessage("Home " + home + " Deleted");
             } else {
-                player.sendMessage("Usage: /delhome homename");
+                player.sendMessage("Home " + home + " not found");
             }
-
         } catch (SQLException e) {
             skillIssue(e);
         }
+
         return true;
     }
 
