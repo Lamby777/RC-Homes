@@ -25,13 +25,15 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class RCHomes extends JavaPlugin {
     // homes listed per /homes page
-    private static final int PAGE_LENGTH = 16;
+    static final int PAGE_LENGTH = 16;
+
     // At least this percent of the name should match
     private static final double HOME_SEARCH_STRICTNESS = 0.30;
+
+    // the name used for the home processed by swap commands
     private static final String SWAP_HOME_NAME = "__swap";
 
     private SemVerHelper semverHelper = new SemVerHelper(this);
-
     private static Connection conn;
     private static DatabaseLogin dbLogin;
     private PreparedStatements prepared;
@@ -155,9 +157,10 @@ public class RCHomes extends JavaPlugin {
                             cmdDelHomeOther(player, args);
 
                         } else if (args[0].equalsIgnoreCase("tp")) {
-                            cmdJumpHomeOther(player, args);
+                            cmdHomeOther(player, args);
                         }
                     }
+                    // TODO actually validate the subcommands
                     return true;
             }
         }
@@ -220,31 +223,6 @@ public class RCHomes extends JavaPlugin {
             default:
                 player.sendMessage("Unknown help page: " + page);
                 break;
-        }
-    }
-
-    private boolean cmdJumpHomeOther(Player player, String[] args) {
-        if (args.length < 1) {
-            return true;
-        } else {
-            UUID uuid = Bukkit.getPlayerUniqueId(args[1]);
-            String home = args[2];
-
-            try {
-                ResultSet rs = prepared.homesWithName(uuid.toString(), home);
-                if (!rs.next()) {
-                    player.sendMessage("Home not found");
-                    return false;
-                }
-
-                player.sendMessage("| Going to: " + home + " | ");
-
-                sendPlayerToHome(player, rs);
-                player.sendMessage("Teleported to: " + home);
-            } catch (SQLException e) {
-                skillIssue(e);
-            }
-            return true;
         }
     }
 
@@ -342,7 +320,7 @@ public class RCHomes extends JavaPlugin {
         String uuid = player.getUniqueId().toString();
 
         try {
-            var exists = sendPlayerToHome(player, SWAP_HOME_NAME);
+            var exists = sendPlayerToHome(player, uuid, SWAP_HOME_NAME);
 
             if (exists) {
                 player.sendMessage("Teleported to swap home.");
@@ -494,10 +472,11 @@ public class RCHomes extends JavaPlugin {
 
     private void cmdHome(Player player, String[] args) {
         String home = args.length > 0 ? args[0] : "home";
+        String uuid = player.getUniqueId().toString();
 
         try {
             player.sendMessage("| Going to: " + home + " | ");
-            var exists = sendPlayerToHome(player, home);
+            var exists = sendPlayerToHome(player, uuid, home);
 
             if (exists) {
                 player.sendMessage("Teleported to: " + home);
@@ -510,22 +489,44 @@ public class RCHomes extends JavaPlugin {
     }
 
     /**
+     * Teleports the player to another player's home
+     *
+     * @param player The player to teleport
+     * @param args   The arguments passed to the command
+     * @return i honestly don't fuckin know, prob rewriting this myself later
+     */
+    private boolean cmdHomeOther(Player player, String[] args) {
+        if (args.length < 1) {
+            return true; // TODO why true?????????
+        }
+
+        String uuid = Bukkit.getPlayerUniqueId(args[1]).toString();
+        String home = args[2];
+
+        try {
+            sendPlayerToHome(player, uuid, home);
+        } catch (SQLException e) {
+            skillIssue(e);
+        }
+        return true;
+    }
+
+    /**
      * Teleports the player to the home with the given name
      * 
-     * @param player The player to teleport
-     * @param home   The name of the home
+     * @param target    The player to teleport
+     * @param homeowner The home owner's UUID
+     * @param home      The name of the home
      * @return true if the home exists, false otherwise
      * @throws SQLException if the database query fails
      */
-    private boolean sendPlayerToHome(Player player, String home) throws SQLException {
-        String uuid = player.getUniqueId().toString();
-
-        ResultSet rs = prepared.homesWithName(uuid, home);
+    private boolean sendPlayerToHome(Player target, String homeownerUUID, String home) throws SQLException {
+        ResultSet rs = prepared.homesWithName(homeownerUUID, home);
         if (!rs.next()) {
             return false;
         }
 
-        Location loc = player.getLocation();
+        Location loc = target.getLocation();
 
         loc.setWorld(Bukkit.getWorld(rs.getString("world")));
         loc.setX(rs.getDouble("x"));
@@ -543,7 +544,7 @@ public class RCHomes extends JavaPlugin {
             loc.setPitch(pitch);
         }
 
-        player.teleport(loc);
+        target.teleport(loc);
         return true;
     }
 
