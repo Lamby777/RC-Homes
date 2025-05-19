@@ -7,7 +7,7 @@ with MySQL/MariaDB support.
 - Uses MySQL or MariaDB
 - Fast performance, even when huge amounts of homes are set
 - Admins can see/edit nearby homes of players
-- Convenient commands to flip between 2 temporary home slots (wip)
+- Convenient commands for swapping between locations (temporary homes)
 - Supports wildcards for deleting homes (wip)
 - Your zP-Homes 0.13.0 database will carry over! No need to start over.
   - Switching back to zP-Homes probably won't work after migration. Don't count on it.
@@ -33,8 +33,6 @@ with a prefix. (will ask for confirmation)
 - `/homemanager delhome <name> <username>` - Deletes a player's home.
 
 ## Swap Commands (Permission: `rchomes.swap`)
-
-WIP FEATURE!!!
 
 If you play on a server that has this plugin, you'll quickly find
 yourself setting a "temporary" home every single time you want to
