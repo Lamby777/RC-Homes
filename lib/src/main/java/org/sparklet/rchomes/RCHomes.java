@@ -316,22 +316,6 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
-    private void cmdSwapHome(Player player) {
-        String uuid = player.getUniqueId().toString();
-
-        try {
-            var exists = sendPlayerToHome(player, uuid, SWAP_HOME_NAME);
-
-            if (exists) {
-                player.sendMessage("Teleported to swap home.");
-            } else {
-                player.sendMessage("Swap home not found. Use `/brb` first.");
-            }
-        } catch (SQLException e) {
-            skillIssue(e);
-        }
-    }
-
     private void setHomeForPlayer(Player player, String homename) {
         Location loc = player.getLocation();
         String uuid = player.getUniqueId().toString();
@@ -470,13 +454,26 @@ public class RCHomes extends JavaPlugin {
         return true;
     }
 
+    private void cmdSwapHome(Player player) {
+        try {
+            var exists = sendPlayerToOwnHome(player, SWAP_HOME_NAME);
+
+            if (exists) {
+                player.sendMessage("Teleported to swap home.");
+            } else {
+                player.sendMessage("Swap home not found. Use `/brb` first.");
+            }
+        } catch (SQLException e) {
+            skillIssue(e);
+        }
+    }
+
     private void cmdHome(Player player, String[] args) {
         String home = args.length > 0 ? args[0] : "home";
-        String uuid = player.getUniqueId().toString();
 
         try {
             player.sendMessage("| Going to: " + home + " |");
-            var exists = sendPlayerToHome(player, uuid, home);
+            var exists = sendPlayerToOwnHome(player, home);
 
             if (exists) {
                 player.sendMessage("Teleported to: " + home);
@@ -502,7 +499,7 @@ public class RCHomes extends JavaPlugin {
 
         try {
             player.sendMessage("| Going to: " + home + " (User: " + homeowner + ") |");
-            var exists = sendPlayerToHome(player, homeownerUUID, home);
+            var exists = sendPlayerToOtherHome(player, homeownerUUID, home);
 
             if (exists) {
                 player.sendMessage("Teleported to: " + home + " (User: " + homeowner + ")");
@@ -515,8 +512,25 @@ public class RCHomes extends JavaPlugin {
     }
 
     /**
+     * Internal method that teleports the player to their home with the given name
+     *
+     * Just calls `sendPlayerToOtherHome` under the hood
+     *
+     * @param target The player to teleport
+     * @param home   The name of the home
+     * @return true if the home exists, false otherwise
+     * @throws SQLException if the database query fails
+     */
+    private boolean sendPlayerToOwnHome(Player target, String home) throws SQLException {
+        String uuid = target.getUniqueId().toString();
+        return sendPlayerToOtherHome(target, uuid, home);
+    }
+
+    /**
      * Internal method that teleports the player to the home with the given name
-     * This is meant to be used in multiple other methods
+     * and owner UUID
+     *
+     * Use `sendPlayerToOwnHome` if you want the owner to be the same as the player
      *
      * @param target    The player to teleport
      * @param homeowner The home owner's UUID
@@ -524,7 +538,7 @@ public class RCHomes extends JavaPlugin {
      * @return true if the home exists, false otherwise
      * @throws SQLException if the database query fails
      */
-    private boolean sendPlayerToHome(Player target, String homeownerUUID, String home) throws SQLException {
+    private boolean sendPlayerToOtherHome(Player target, String homeownerUUID, String home) throws SQLException {
         ResultSet rs = prepared.homesWithName(homeownerUUID, home);
         if (!rs.next()) {
             return false;
